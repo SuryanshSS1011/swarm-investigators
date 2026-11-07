@@ -168,36 +168,37 @@ def fig_forest(S):
 
 
 def fig_alibi(R):
-    """Figure 4 (exploratory E1): cover stories on the five post-only cells, standard against D3, per investigator."""
+    """Figure 4 (exploratory E1 and E2): cover stories on the five retraction cells under three treatments."""
     fc = {tuple(c) for c in W.FALSE_CORRECTION_CELLS}
     sub = [r for r in R if r["violating"] and (r["archetype"], r["tier"]) in fc and r["header"] == "none"]
     conds = [("neutral", "neutral"), ("spoof", "retraction"), ("vouch", "alibi"), ("self_vouch", "both")]
-    invs = [i for i in ORDER if any(r["investigator"] == i and r["arm"] == "e1_d3" for r in sub)]
-    fig, axes = plt.subplots(1, len(invs), figsize=(1.95 * len(invs) + 0.6, 2.4), sharey=True, squeeze=False)
+    treat = [(("main", "e1_main"), BLUE, "standard prompt and log"),
+             (("e1_d3",), ORANGE, "conflict-aware prompt (D3)"),
+             (("e2_effects",), AQUA, "platform logs effects (E2)")]
+    invs = [i for i in ORDER if any(r["investigator"] == i and r["arm"] in ("e1_d3", "e2_effects") for r in sub)]
+    fig, axes = plt.subplots(1, len(invs), figsize=(1.75 * len(invs) + 0.5, 2.3), sharey=True, squeeze=False)
     for ax, inv in zip(axes[0], invs):
-        for si, (arms, color, lab) in enumerate(((("main", "e1_main"), BLUE, "standard prompt"),
-                                                  (("e1_d3",), ORANGE, "conflict-aware prompt (D3)"))):
+        # Use the authors this investigator ran under the follow-ups, so every treatment sees the same boards.
+        auth = {r["author"] for r in sub if r["investigator"] == inv and r["arm"] in ("e1_d3", "e2_effects")}
+        for si, (arms, color, lab) in enumerate(treat):
             for ci, (v, _) in enumerate(conds):
-                pick = [r["flagged"] for r in sub if r["investigator"] == inv and r["arm"] in arms and r["variant"] == v]
-                # Compare only boards that also ran under D3, so both prompts see the same authors.
-                d3_auth = {r["author"] for r in sub if r["investigator"] == inv and r["arm"] == "e1_d3"}
-                pick = [r["flagged"] for r in sub if r["investigator"] == inv and r["arm"] in arms and r["variant"] == v
-                        and r["author"] in d3_auth]
+                pick = [r["flagged"] for r in sub if r["investigator"] == inv and r["arm"] in arms
+                        and r["variant"] == v and r["author"] in auth]
                 if not pick:
                     continue
                 p, lo, hi = wilson(sum(pick), len(pick))
-                x = ci + (si - 0.5) * 0.3
-                ax.plot([x, x], [lo * 100, hi * 100], color=color, lw=1.3, alpha=0.55)
-                ax.scatter([x], [p * 100], s=22, color=color, zorder=3, edgecolor="white", lw=0.9,
-                           label=lab if (ci == 0 and inv == invs[0]) else None)
+                x = ci + (si - 1) * 0.24
+                ax.plot([x, x], [lo * 100, hi * 100], color=color, lw=1.2, alpha=0.55)
+                ax.scatter([x], [p * 100], s=18, color=color, zorder=3, edgecolor="white", lw=0.8,
+                           label=lab if (ci == 1 and inv == invs[0]) else None)
         ax.set_xticks(range(len(conds)))
-        ax.set_xticklabels([c[1] for c in conds], rotation=35, ha="right", fontsize=7.5)
-        ax.set_title(W.DISPLAY[inv], fontsize=8.5, color=INK, loc="left")
+        ax.set_xticklabels([c[1] for c in conds], rotation=35, ha="right", fontsize=7.2)
+        ax.set_title(W.DISPLAY[inv], fontsize=8, color=INK, loc="left")
         ax.set_ylim(0, 105)
         ax.grid(axis="y", color=GRID, lw=0.6)
         ax.set_axisbelow(True)
     axes[0][0].set_ylabel("Detection (%)")
-    fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.1), ncol=2, frameon=False, fontsize=7.5)
+    fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.12), ncol=3, frameon=False, fontsize=7.2)
     save(fig, "fig4_alibi")
 
 
@@ -207,7 +208,7 @@ def main():
     fig_excerpt()
     fig_dumbbell(R)
     fig_forest(S)
-    if any(r["arm"].startswith("e1") for r in R):
+    if any(r["arm"].startswith(("e1", "e2")) for r in R):
         fig_alibi(R)
     print("figures ->", sorted(p.name for p in OUT.glob("fig*.png")))
 

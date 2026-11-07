@@ -1,10 +1,41 @@
-# swarm-investigators
+# The Last Word Wins
 
-Shared infrastructure for a 48-hour AI safety sprint in which LLM authors write synthetic multi-agent message-board logs and LLM investigators audit them for planted violations.
+**Retractions and peer alibis in swarm logs defeat LLM incident investigators.** This repository holds the
+benchmark, pre-registrations, raw outputs and analysis for an entry in Apart Research's
+[Swarm Alignment Hackathon](https://apartresearch.com/sprints/swarm-alignment-2026) (November 2026).
 
-This repository is the model-calling layer only. The message boards, violation events and investigator prompts are built separately on top of it.
+## What the study does
 
-## Setup
+After the July 2026 Hugging Face incident, METR and Redwood delegated much of their transcript review to LLM
+agents. We built 40 synthetic swarm logs with planted ground-truth violations, each with a benign twin that matches
+it line for line, had several model families write the agents' posts, and measured how text that agents write into
+their own logs changes LLM investigators' verdicts.
+
+1. `docs/prereg_pilot.md` and `results/pilot/` hold the pilot and its decision rules.
+2. `docs/prereg_main.md` is the main pre-registration, committed before any main-study call.
+3. `docs/explore_alibi.md` (E1) and `docs/explore_logging.md` (E2) are exploratory follow-ups, each committed before
+   its first call.
+4. `results/main/summary.json` holds every pre-registered test, and `results/main/fig*.png` the figures.
+
+## Reproducing
+
+```bash
+uv sync && cp compute.env.example compute.env      # add ANTHROPIC_API_KEY and GEMINI_API_KEY
+python3 scripts/study.py skeletons                 # seeded boards (already in data/main/)
+python3 scripts/author_boards.py --data data/main --authors claude/claude-haiku-5-5,gemini/gemini-3.8-flash
+python3 scripts/study.py requests --investigators claude/claude-haiku-5-5      # one file per investigator
+python3 -m swarm.anthropic_batches data/main/req/claude_claude-haiku-5-5.jsonl data/main/out/claude_claude-haiku-5-5.jsonl
+bash scripts/run_openweight.sh                     # Qwen3-32B and gpt-oss-20b on Modal, from a laptop
+bash scripts/build_all.sh                          # score, analyze, draw figures
+```
+
+The board generator is in `swarm/world.py`, `swarm/skeleton.py`, `swarm/author.py` and `swarm/assemble.py`. The
+investigator prompt, parser and scorer are in `swarm/investigate.py`, and the rule-based baseline is in
+`swarm/baseline.py`.
+
+## Infrastructure
+
+### Setup
 
 ```bash
 git clone https://github.com/SuryanshSS1011/swarm-investigators.git
@@ -16,7 +47,7 @@ uv run pytest -q                     # offline checks, no API calls
 
 Run every command from the repo root. `compute.env` is gitignored. The open-weight models also need the Modal servers described in [`docs/modal_runbook.md`](docs/modal_runbook.md).
 
-## Calling a model
+### Calling a model
 
 `swarm.llm.complete(model, system, user, max_tokens, temperature=None, replicate=0)` returns an `LLMResult` with `text`, `input_tokens`, `output_tokens`, `cost_usd`, `latency_s` and `error`, plus `model`, `stop_reason` and `cached`. The prefix of the model id picks the route.
 
@@ -39,7 +70,7 @@ Each route keeps its models at their lowest reasoning setting.
 
 Successful answers are cached in `data/cache/llm.sqlite`, keyed by sha256 over model, system, user, max_tokens, temperature and replicate. A cache hit makes no call and costs nothing, and `replicate` draws independent samples of one prompt. Calls are retried with exponential backoff and jitter on HTTP 408, 429 and 5xx, which includes Anthropic's 529 overloaded error, and on connection errors. An empty, refused or truncated answer is a result rather than an error, so it is never retried, because retrying until an answer parses would bias the sample. Check `stop_reason` instead.
 
-## Running request files
+### Running request files
 
 A request file is JSONL with one object per line. Each object holds `id`, `model`, `system`, `user` and `max_tokens`, and it may add `temperature`, `replicate` and a `meta` dict that is copied to the output.
 
@@ -49,7 +80,7 @@ A request file is JSONL with one object per line. Each object holds `id`, `model
 
 Keep raw outputs in `data/raw/`, which is gitignored along with `data/cache/`.
 
-## Parsing answers
+### Parsing answers
 
 `swarm.parse.parse_json_block(text)` returns the answer object from model text, or None. It skips reasoning and code fences and repairs common JSON mistakes. It returns None when the last JSON value is cut off or broken, rather than falling back to an earlier draft.
 
