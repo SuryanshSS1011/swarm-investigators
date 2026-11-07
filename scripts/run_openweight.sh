@@ -47,14 +47,16 @@ uv run python scripts/author_boards.py --data data/main --authors vllm/qwen,vllm
 uv run python scripts/study.py requests --investigators vllm/qwen,vllm/gptoss
 uv run python scripts/study.py --config configs/explore_alibi.json requests --investigators vllm/qwen,vllm/gptoss
 uv run python scripts/study.py --config configs/explore_logging.json requests --investigators vllm/qwen,vllm/gptoss
+pids=()
 for m in qwen gptoss; do
   ( uv run python -m swarm.batch "data/main/req/vllm_${m}.jsonl" "data/main/out/vllm_${m}.jsonl" --concurrency vllm=48 &&
     uv run python -m swarm.batch "data/main/req/vllm_${m}_e1.jsonl" "data/main/out/vllm_${m}_e1.jsonl" --concurrency vllm=48 &&
     uv run python -m swarm.batch "data/main/req/vllm_${m}_e2.jsonl" "data/main/out/vllm_${m}_e2.jsonl" --concurrency vllm=48 ) &
+  pids+=($!)
 done
-wait
+wait "${pids[@]}"
 
 # 6. Stop the servers so they bill nothing more.
-uv run modal app stop swarm-inv-qwen || true
-uv run modal app stop swarm-inv-gptoss || true
+uv run modal app stop -y swarm-inv-qwen || true
+uv run modal app stop -y swarm-inv-gptoss || true
 echo "Done. Tell Claude the open-weight run finished."
