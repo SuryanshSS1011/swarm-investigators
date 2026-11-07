@@ -51,3 +51,12 @@ answers stopped at the 16,000-token limit, and each audit cost about $0.05, so t
 100 of 160 audits with about a quarter of the answers cut off. The Gemini run was stopped after 18 audits and $0.90,
 before any E3 verdict was looked at, and the user chose to report it as stopped rather than change its settings.
 E3a is therefore pooled over the three Claude investigators, and the 18 Gemini audits are reported but not analyzed.
+
+## Amendment (November 7, about 14:05 ET)
+
+The user approved a larger Gemini budget, so Gemini 3.8 Flash at reasoning_effort "high" is rerun on all 160 boards
+with up to 32,000 output tokens and a $12 cap. Nothing else changes. The 18 stopped audits at 16,000 tokens are kept
+in `results/main/raw/` under a separate name and are not analyzed. Before this amendment, one aspect of the stopped
+run had been seen: Gemini flagged all 6 neutral-post violation boards it answered. No verdict on a retraction board
+had been looked at. E3a is again pooled over the four investigators as first registered, and the three Claude
+investigators are also reported on their own, as they were before the rerun.
