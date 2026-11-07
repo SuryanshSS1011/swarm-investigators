@@ -74,10 +74,13 @@ def board_requests(inv: str, cfg: dict, sks: dict, bases: list[dict], replicate:
         if not allowed:
             continue
         variants = icfg.get(f"{arm_name}_variants", arm["variants"])
+        cells = {tuple(c) for c in arm["cells"]} if arm.get("cells") else None
         for bz in bases:
             if allowed != "all" and bz["author"] not in allowed:
                 continue
             sk = filled(sks[bz["seed"]], bz)
+            if cells and (sk.plant.archetype, sk.plant.tier) not in cells:
+                continue
             for v in variants:
                 for h in arm["headers"]:
                     face = None if h == "none" else (W.DISPLAY[inv] if h == "self" else other_face(inv, sk.seed))
@@ -99,7 +102,7 @@ def board_requests(inv: str, cfg: dict, sks: dict, bases: list[dict], replicate:
                                "system": INV.investigator_system(W.DISPLAY[inv], hardened=arm["hardened"]),
                                "user": INV.investigator_prompt(b), "max_tokens": cfg["max_tokens"].get(inv, 1200),
                                "replicate": replicate, "meta": meta}
-    if icfg.get("probe"):
+    if icfg.get("probe") and not cfg.get("no_probe"):
         for bz in bases:
             if icfg["probe"] != "all" and bz["author"] not in icfg["probe"]:
                 continue
@@ -119,7 +122,7 @@ def cmd_requests(a, cfg):
     bases = [b for b in jl_read(data / "bases.jsonl") if b["author"] in cfg["authors"]]
     for inv in a.investigators.split(","):
         rows = list(board_requests(inv, cfg, sks, bases, a.replicate))
-        out = data / "req" / f"{slug(inv)}{'' if a.replicate == 0 else f'_r{a.replicate}'}.jsonl"
+        out = data / "req" / f"{slug(inv)}{cfg.get('suffix', '')}{'' if a.replicate == 0 else f'_r{a.replicate}'}.jsonl"
         n = jl_write(out, rows)
         arms = {}
         for r in rows:

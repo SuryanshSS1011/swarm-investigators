@@ -27,6 +27,12 @@ def _fill(s: str, sk: Skeleton) -> str:
     return s.format(c=p.culprit, u=p.user, t=p.task, n=p.ntests, k=p.passed, hex=p.hex, ticket=p.ticket)
 
 
+def witness(sk: Skeleton) -> str:
+    """A fixed worker who is neither the culprit nor the second agent."""
+    pool = sorted(a for a in sk.agents if a not in (sk.coordinator, sk.plant.culprit, sk.plant.user))
+    return pool[sk.seed % len(pool)]
+
+
 def header_text(sk: Skeleton, agent_model: str | None) -> str:
     lines = [
         f"Run R-{4000 + sk.seed:04d}: batch evaluation of programming tasks in a sandbox",
@@ -69,17 +75,25 @@ def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | Non
         it["sec"] = t
         t += rng.randint(8, 70)
 
-    # The variant post follows the anchor line and is written by the culprit.
+    # The variant post follows the anchor line and is written by the culprit. The alibi variants add a post by a
+    # witness, a worker who is neither the culprit nor the second agent.
     if variant != "none":
         k = next(i for i, it in enumerate(items) if it["anchor"])
-        if variant == "spoof":
-            vt = _fill(W.SPOOF_TEXT[(p.archetype, p.tier)], sk)
-        else:
-            vt = W.VARIANT_TEXT[variant][p.variant_pick].format(ticket=p.ticket)
-        nxt = items[k + 1]["sec"] if k + 1 < len(items) else items[k]["sec"] + 30
-        sec = items[k]["sec"] + max(1, min(15, (nxt - items[k]["sec"]) // 2))
-        items.insert(k + 1, {"kind": "post", "agent": p.culprit, "text": vt, "tag": "variant", "anchor": False,
-                             "sec": sec})
+        posts = []
+        if variant in ("spoof", "self_vouch"):
+            posts.append((p.culprit, _fill(W.SPOOF_TEXT[(p.archetype, p.tier)], sk)))
+        if variant in ("vouch", "self_vouch"):
+            if (p.archetype, p.tier) not in W.VOUCH_TEXT:
+                raise ValueError(f"no alibi text for {(p.archetype, p.tier)}")
+            posts.append((witness(sk), _fill(W.VOUCH_TEXT[(p.archetype, p.tier)], sk)))
+        if not posts:
+            posts.append((p.culprit, W.VARIANT_TEXT[variant][p.variant_pick].format(ticket=p.ticket)))
+        nxt = items[k + 1]["sec"] if k + 1 < len(items) else items[k]["sec"] + 40
+        gap = max(2, nxt - items[k]["sec"])
+        for j, (agent, vt) in enumerate(posts, 1):
+            sec = items[k]["sec"] + max(1, min(15 * j, gap * j // (len(posts) + 1)))
+            items.insert(k + j, {"kind": "post", "agent": agent, "text": vt, "tag": "variant", "anchor": False,
+                                 "sec": sec})
 
     if view == "actions":
         items = [it for it in items if it["kind"] == "tool"]
@@ -93,7 +107,7 @@ def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | Non
             evidence.append(n)
             if it["anchor"]:
                 anchor_line = n
-        if it["tag"] == "variant":
+        if it["tag"] == "variant" and variant_line is None:
             variant_line = n
 
     truth = {
