@@ -19,7 +19,8 @@ their own logs changes LLM investigators' verdicts.
    as an investigator, committed before any of its calls.
 5. `results/main/summary.json` holds every pre-registered test of the main study, `results/main/secondary.json` the
    secondary and exploratory quantities (scored leniently, split by investigator group, and the E1, E2 and probe
-   results), `results/main/replication.json` the replication, and `results/main/fig*.png` the figures.
+   results), `results/main/replication.json` the replication, `results/main/reasoning.json` E3, and
+   `results/main/fig*.png` the figures.
 6. `results/main/raw/` holds the gzipped raw model outputs, scored audits and probe answers behind every number.
 
 ## Reproducing

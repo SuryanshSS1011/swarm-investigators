@@ -98,8 +98,8 @@ def main() -> None:
     # The cover story on fake-tool-record cells.
     fake = {"all": two_rates(paired(main_v, lambda r: r["violating"] and not is_fc(r), neutral, spoof))}
     for grp, sel in (("closed_weight", closed), ("open_weight", lambda i: not closed(i))):
-        fake[grp] = two_rates(paired(main_v, lambda r, sel=sel: r["violating"] and not is_fc(r) and sel(r["investigator"]),
-                                     neutral, spoof))
+        keep_grp = lambda r, sel=sel: r["violating"] and not is_fc(r) and sel(r["investigator"])  # noqa: E731
+        fake[grp] = two_rates(paired(main_v, keep_grp, neutral, spoof))
     X["fake_tool_record"] = fake
 
     # False-positive change under the cover story, on the clean twins of each cell group.
@@ -135,7 +135,8 @@ def main() -> None:
     X["d1_retraction"] = two_rates(d1, "standard", "d1")
     d2v = [r for r in rows if r["arm"] == "d2" and r["violating"]]
     X["d2_violating"] = {}
-    for grp, sel in (("tool_record", lambda r: r["cell"] in TOOL_CELLS), ("post_only", lambda r: r["cell"] not in TOOL_CELLS)):
+    for grp, sel in (("tool_record", lambda r: r["cell"] in TOOL_CELLS),
+                     ("post_only", lambda r: r["cell"] not in TOOL_CELLS)):
         x = [r["flagged"] for r in d2v if sel(r)]
         X["d2_violating"][grp] = [sum(x), len(x)]
 

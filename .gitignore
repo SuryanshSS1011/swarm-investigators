@@ -18,3 +18,6 @@ __pycache__/
 data/kt/
 data/main/
 uv.lock
+
+# local run logs
+logs/
