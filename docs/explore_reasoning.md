@@ -60,3 +60,13 @@ in `results/main/raw/` under a separate name and are not analyzed. Before this a
 run had been seen: Gemini flagged all 6 neutral-post violation boards it answered. No verdict on a retraction board
 had been looked at. E3a is again pooled over the four investigators as first registered, and the three Claude
 investigators are also reported on their own, as they were before the rerun.
+
+## Extension (November 7, about 14:20 ET)
+
+Committed before any call of the extension. Qwen3-32B with thinking on, its only setting above the floor, and
+gpt-oss-20b at reasoning_effort "high" audit the same 160 boards with up to 24,000 output tokens. The Modal
+servers' context length rises from 16,384 to 32,768 tokens to make room, which does not change shorter requests.
+Each model is compared with its own main-arm audits of the same boards at the floor. Both are reported per
+investigator and pooled with each other, outside the E3a pool of the four registered investigators. They run from
+the laptop through `scripts/run_openweight_e3.sh`, like the main study's open-weight half, and Modal bills GPU time
+rather than tokens, so there is no token cap.

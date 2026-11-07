@@ -23,7 +23,7 @@ MODEL = "Qwen/Qwen3-32B-FP8"  # Apache-2.0, ungated; FP8 weights fit one H100 wi
 MINUTES = 60
 # Prompt plus output, in tokens. Longer requests get HTTP 400. Qwen3 handles up to 32,768 without YaRN, so raise
 # this and redeploy if investigator prompts outgrow it.
-MAX_MODEL_LEN = 16384
+MAX_MODEL_LEN = 32768  # raised from 16,384 for E3, whose thinking needs the room
 
 image = modal.Image.debian_slim(python_version="3.12").pip_install(
     "vllm==0.9.2",

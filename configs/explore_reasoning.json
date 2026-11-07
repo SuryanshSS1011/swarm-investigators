@@ -57,13 +57,21 @@
    "e3_high": [
     "claude/claude-haiku-5-5"
    ]
+  },
+  "vllm/qwen@high": {
+   "e3_high": "all"
+  },
+  "vllm/gptoss@high": {
+   "e3_high": "all"
   }
  },
  "max_tokens": {
   "claude/claude-haiku-5-5@high": 16000,
   "claude/claude-sonnet-5-5@high": 16000,
   "gemini/gemini-3.8-flash@high": 32000,
-  "claude/claude-opus-5-5@high": 16000
+  "claude/claude-opus-5-5@high": 16000,
+  "vllm/qwen@high": 24000,
+  "vllm/gptoss@high": 24000
  },
  "budget_usd": {
   "claude/claude-haiku-5-5@high": 1.5,
