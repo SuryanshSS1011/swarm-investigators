@@ -162,7 +162,8 @@ def style_diagonal(rows, violating: bool):
 
 
 def main() -> None:
-    rows = load()
+    # Replication R (arms r_*) is analyzed on its own by scripts/analyze_replication.py and never pooled here.
+    rows = [r for r in load() if not r["arm"].startswith("r_")]
     for r in rows:
         r["spoof_kind"] = "fake_record" if (r["archetype"], r["tier"]) in FAKE_RECORD else "false_correction"
     S = {"n_audits": len(rows), "investigators": sorted({r["investigator"] for r in rows}),

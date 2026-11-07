@@ -15,8 +15,12 @@ their own logs changes LLM investigators' verdicts.
 2. `docs/prereg_main.md` is the main pre-registration, committed before any main-study call.
 3. `docs/explore_alibi.md` (E1) and `docs/explore_logging.md` (E2) are exploratory follow-ups, each committed before
    its first call.
-4. `results/main/summary.json` holds every pre-registered test, and `results/main/fig*.png` the figures.
-5. `results/main/raw/` holds the gzipped raw model outputs, scored audits and probe answers behind every number.
+4. `docs/prereg_replication.md` (R) is a pre-registered replication with model-written retractions and GPT-5.6 Sol
+   as an investigator, committed before any of its calls.
+5. `results/main/summary.json` holds every pre-registered test of the main study, `results/main/secondary.json` the
+   secondary and exploratory quantities (scored leniently, split by investigator group, and the E1, E2 and probe
+   results), `results/main/replication.json` the replication, and `results/main/fig*.png` the figures.
+6. `results/main/raw/` holds the gzipped raw model outputs, scored audits and probe answers behind every number.
 
 ## Reproducing
 
@@ -31,12 +35,13 @@ bash scripts/build_all.sh                          # score, analyze, draw figure
 ```
 
 To rebuild the results without any model calls, unzip the committed outputs first. The audit files go to
-`data/main/out/`, and `scored`, `probes` and `author_log` go to `data/main/`.
+`data/main/out/`, and `scored`, `probes` and `author_log` go to `data/main/`. The replication also reads
+`data/main/gen_retractions.jsonl`, which is committed.
 
 ```bash
 mkdir -p data/main/out && for f in results/main/raw/{claude,gemini,vllm}_*.jsonl.gz; do gunzip -c "$f" > data/main/out/$(basename "${f%.gz}"); done
 for f in scored probes author_log; do gunzip -c results/main/raw/$f.jsonl.gz > data/main/$f.jsonl; done
-python3 scripts/analyze.py && python3 scripts/figures.py
+python3 scripts/analyze.py && python3 scripts/analyze_secondary.py && python3 scripts/figures.py
 ```
 
 The board generator is in `swarm/world.py`, `swarm/skeleton.py`, `swarm/author.py` and `swarm/assemble.py`. The
@@ -76,7 +81,7 @@ Each route keeps its models at their lowest reasoning setting.
 2. **vLLM:** Qwen3's thinking is switched off. gpt-oss runs at low reasoning effort and gets at least 4,000 output tokens, because its reasoning counts against `max_tokens`.
 3. **Gemini:** The lowest `reasoning_effort` each model accepts is found on its first call by climbing from `none`, and thinking tokens are counted as output tokens.
 4. **OpenRouter:** The cost of each call is read from the response.
-5. **OpenAI:** Requests send `max_completion_tokens`. `OPENAI_PRICES` in `swarm/llm.py` starts empty, so add a model's prices before its first call.
+5. **OpenAI:** Requests send `max_completion_tokens`, and `OPENAI_REASONING` sets each model's lowest accepted reasoning effort. Add a model's prices to `OPENAI_PRICES` in `swarm/llm.py` before its first call.
 
 Successful answers are cached in `data/cache/llm.sqlite`, keyed by sha256 over model, system, user, max_tokens, temperature and replicate. A cache hit makes no call and costs nothing, and `replicate` draws independent samples of one prompt. Calls are retried with exponential backoff and jitter on HTTP 408, 429 and 5xx, which includes Anthropic's 529 overloaded error, and on connection errors. An empty, refused or truncated answer is a result rather than an error, so it is never retried, because retrying until an answer parses would bias the sample. Check `stop_reason` instead.
 
