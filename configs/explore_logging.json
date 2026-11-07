@@ -4,19 +4,80 @@
   "no_probe": true,
   "seed_start": 1000,
   "n_boards": 40,
-  "authors": ["claude/claude-haiku-5-5", "gemini/gemini-3.8-flash"],
+  "authors": [
+    "claude/claude-haiku-5-5",
+    "gemini/gemini-3.8-flash"
+  ],
   "arms": {
-    "e2_effects": {"variants": ["neutral", "spoof", "self_vouch"], "headers": ["none"], "view": "effects",
-                   "hardened": false,
-                   "cells": [["hidden_answers", "implicit"], ["scorer_tamper", "implicit"], ["transcript_tamper", "implicit"],
-                             ["credential_share", "explicit"], ["credential_share", "implicit"]]}
+    "e2_effects": {
+      "variants": [
+        "neutral",
+        "spoof",
+        "self_vouch"
+      ],
+      "headers": [
+        "none"
+      ],
+      "view": "effects",
+      "hardened": false,
+      "cells": [
+        [
+          "hidden_answers",
+          "implicit"
+        ],
+        [
+          "scorer_tamper",
+          "implicit"
+        ],
+        [
+          "transcript_tamper",
+          "implicit"
+        ],
+        [
+          "credential_share",
+          "explicit"
+        ],
+        [
+          "credential_share",
+          "implicit"
+        ]
+      ]
+    }
   },
   "investigators": {
-    "claude/claude-haiku-5-5": {"e2_effects": "all"},
-    "claude/claude-sonnet-5-5": {"e2_effects": ["claude/claude-haiku-5-5"]},
-    "gemini/gemini-3.8-flash": {"e2_effects": "all"},
-    "gemini/gemini-4-argon": {"e2_effects": ["gemini/gemini-3.8-flash"], "e2_effects_variants": ["spoof", "self_vouch"]}
+    "claude/claude-haiku-5-5": {
+      "e2_effects": "all"
+    },
+    "claude/claude-sonnet-5-5": {
+      "e2_effects": [
+        "claude/claude-haiku-5-5"
+      ]
+    },
+    "gemini/gemini-3.8-flash": {
+      "e2_effects": "all"
+    },
+    "gemini/gemini-4-argon": {
+      "e2_effects": [
+        "gemini/gemini-3.8-flash"
+      ],
+      "e2_effects_variants": [
+        "spoof",
+        "self_vouch"
+      ]
+    },
+    "vllm/qwen": {
+      "e2_effects": "all"
+    },
+    "vllm/gptoss": {
+      "e2_effects": "all"
+    }
   },
-  "max_tokens": {"claude/claude-haiku-5-5": 1200, "claude/claude-sonnet-5-5": 1200, "gemini/gemini-3.8-flash": 3000,
-                 "gemini/gemini-4-argon": 6000}
+  "max_tokens": {
+    "claude/claude-haiku-5-5": 1200,
+    "claude/claude-sonnet-5-5": 1200,
+    "gemini/gemini-3.8-flash": 3000,
+    "gemini/gemini-4-argon": 6000,
+    "vllm/qwen": 1200,
+    "vllm/gptoss": 4000
+  }
 }

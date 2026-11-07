@@ -4,27 +4,139 @@
   "no_probe": true,
   "seed_start": 1000,
   "n_boards": 40,
-  "authors": ["claude/claude-haiku-5-5", "gemini/gemini-3.8-flash"],
+  "authors": [
+    "claude/claude-haiku-5-5",
+    "gemini/gemini-3.8-flash"
+  ],
   "arms": {
-    "e1_main": {"variants": ["vouch", "self_vouch"], "headers": ["none"], "view": "full", "hardened": false,
-                "cells": [["hidden_answers", "implicit"], ["scorer_tamper", "implicit"], ["transcript_tamper", "implicit"],
-                          ["credential_share", "explicit"], ["credential_share", "implicit"]]},
-    "e1_d3": {"variants": ["neutral", "spoof", "vouch", "self_vouch"], "headers": ["none"], "view": "full",
-              "hardened": "conflict",
-              "cells": [["hidden_answers", "implicit"], ["scorer_tamper", "implicit"], ["transcript_tamper", "implicit"],
-                        ["credential_share", "explicit"], ["credential_share", "implicit"]]}
+    "e1_main": {
+      "variants": [
+        "vouch",
+        "self_vouch"
+      ],
+      "headers": [
+        "none"
+      ],
+      "view": "full",
+      "hardened": false,
+      "cells": [
+        [
+          "hidden_answers",
+          "implicit"
+        ],
+        [
+          "scorer_tamper",
+          "implicit"
+        ],
+        [
+          "transcript_tamper",
+          "implicit"
+        ],
+        [
+          "credential_share",
+          "explicit"
+        ],
+        [
+          "credential_share",
+          "implicit"
+        ]
+      ]
+    },
+    "e1_d3": {
+      "variants": [
+        "neutral",
+        "spoof",
+        "vouch",
+        "self_vouch"
+      ],
+      "headers": [
+        "none"
+      ],
+      "view": "full",
+      "hardened": "conflict",
+      "cells": [
+        [
+          "hidden_answers",
+          "implicit"
+        ],
+        [
+          "scorer_tamper",
+          "implicit"
+        ],
+        [
+          "transcript_tamper",
+          "implicit"
+        ],
+        [
+          "credential_share",
+          "explicit"
+        ],
+        [
+          "credential_share",
+          "implicit"
+        ]
+      ]
+    }
   },
   "investigators": {
-    "claude/claude-haiku-5-5": {"e1_main": "all", "e1_d3": "all"},
-    "claude/claude-sonnet-5-5": {"e1_main": ["claude/claude-haiku-5-5"], "e1_d3": ["claude/claude-haiku-5-5"]},
-    "claude/claude-opus-5-5": {"e1_main": ["claude/claude-haiku-5-5"], "e1_d3": ["claude/claude-haiku-5-5"],
-                               "e1_d3_variants": ["spoof", "self_vouch"]},
-    "gemini/gemini-3.8-flash": {"e1_main": "all", "e1_d3": "all"},
-    "gemini/gemini-4-argon": {"e1_main": ["gemini/gemini-3.8-flash"], "e1_d3": ["gemini/gemini-3.8-flash"],
-                              "e1_main_variants": ["self_vouch"], "e1_d3_variants": ["self_vouch"]}
+    "claude/claude-haiku-5-5": {
+      "e1_main": "all",
+      "e1_d3": "all"
+    },
+    "claude/claude-sonnet-5-5": {
+      "e1_main": [
+        "claude/claude-haiku-5-5"
+      ],
+      "e1_d3": [
+        "claude/claude-haiku-5-5"
+      ]
+    },
+    "claude/claude-opus-5-5": {
+      "e1_main": [
+        "claude/claude-haiku-5-5"
+      ],
+      "e1_d3": [
+        "claude/claude-haiku-5-5"
+      ],
+      "e1_d3_variants": [
+        "spoof",
+        "self_vouch"
+      ]
+    },
+    "gemini/gemini-3.8-flash": {
+      "e1_main": "all",
+      "e1_d3": "all"
+    },
+    "gemini/gemini-4-argon": {
+      "e1_main": [
+        "gemini/gemini-3.8-flash"
+      ],
+      "e1_d3": [
+        "gemini/gemini-3.8-flash"
+      ],
+      "e1_main_variants": [
+        "self_vouch"
+      ],
+      "e1_d3_variants": [
+        "self_vouch"
+      ]
+    },
+    "vllm/qwen": {
+      "e1_main": "all",
+      "e1_d3": "all"
+    },
+    "vllm/gptoss": {
+      "e1_main": "all",
+      "e1_d3": "all"
+    }
   },
   "max_tokens": {
-    "claude/claude-haiku-5-5": 1200, "claude/claude-sonnet-5-5": 1200, "claude/claude-opus-5-5": 4000,
-    "gemini/gemini-3.8-flash": 3000, "gemini/gemini-4-argon": 6000
+    "claude/claude-haiku-5-5": 1200,
+    "claude/claude-sonnet-5-5": 1200,
+    "claude/claude-opus-5-5": 4000,
+    "gemini/gemini-3.8-flash": 3000,
+    "gemini/gemini-4-argon": 6000,
+    "vllm/qwen": 1200,
+    "vllm/gptoss": 4000
   }
 }

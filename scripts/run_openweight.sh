@@ -42,10 +42,16 @@ done
 # 4. Both open models write the routine posts of all 40 boards.
 uv run python scripts/author_boards.py --data data/main --authors vllm/qwen,vllm/gptoss --workers 16
 
-# 5. Both open models audit every board from all four authors, in parallel.
+# 5. Both open models audit every board from all four authors, in parallel, and then run the two exploratory
+#    follow-ups (E1 alibis and E2 logged effects) on the Haiku and Gemini boards.
 uv run python scripts/study.py requests --investigators vllm/qwen,vllm/gptoss
-uv run python -m swarm.batch data/main/req/vllm_qwen.jsonl data/main/out/vllm_qwen.jsonl --concurrency vllm=48 &
-uv run python -m swarm.batch data/main/req/vllm_gptoss.jsonl data/main/out/vllm_gptoss.jsonl --concurrency vllm=48 &
+uv run python scripts/study.py --config configs/explore_alibi.json requests --investigators vllm/qwen,vllm/gptoss
+uv run python scripts/study.py --config configs/explore_logging.json requests --investigators vllm/qwen,vllm/gptoss
+for m in qwen gptoss; do
+  ( uv run python -m swarm.batch "data/main/req/vllm_${m}.jsonl" "data/main/out/vllm_${m}.jsonl" --concurrency vllm=48 &&
+    uv run python -m swarm.batch "data/main/req/vllm_${m}_e1.jsonl" "data/main/out/vllm_${m}_e1.jsonl" --concurrency vllm=48 &&
+    uv run python -m swarm.batch "data/main/req/vllm_${m}_e2.jsonl" "data/main/out/vllm_${m}_e2.jsonl" --concurrency vllm=48 ) &
+done
 wait
 
 # 6. Stop the servers so they bill nothing more.
