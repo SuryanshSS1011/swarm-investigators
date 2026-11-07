@@ -16,6 +16,7 @@ their own logs changes LLM investigators' verdicts.
 3. `docs/explore_alibi.md` (E1) and `docs/explore_logging.md` (E2) are exploratory follow-ups, each committed before
    its first call.
 4. `results/main/summary.json` holds every pre-registered test, and `results/main/fig*.png` the figures.
+5. `results/main/raw/` holds the gzipped raw model outputs, scored audits and probe answers behind every number.
 
 ## Reproducing
 
@@ -27,6 +28,15 @@ python3 scripts/study.py requests --investigators claude/claude-haiku-5-5      #
 python3 -m swarm.anthropic_batches data/main/req/claude_claude-haiku-5-5.jsonl data/main/out/claude_claude-haiku-5-5.jsonl
 bash scripts/run_openweight.sh                     # Qwen3-32B and gpt-oss-20b on Modal, from a laptop
 bash scripts/build_all.sh                          # score, analyze, draw figures
+```
+
+To rebuild the results without any model calls, unzip the committed outputs first. The audit files go to
+`data/main/out/`, and `scored`, `probes` and `author_log` go to `data/main/`.
+
+```bash
+mkdir -p data/main/out && for f in results/main/raw/{claude,gemini,vllm}_*.jsonl.gz; do gunzip -c "$f" > data/main/out/$(basename "${f%.gz}"); done
+for f in scored probes author_log; do gunzip -c results/main/raw/$f.jsonl.gz > data/main/$f.jsonl; done
+python3 scripts/analyze.py && python3 scripts/figures.py
 ```
 
 The board generator is in `swarm/world.py`, `swarm/skeleton.py`, `swarm/author.py` and `swarm/assemble.py`. The

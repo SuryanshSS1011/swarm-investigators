@@ -176,8 +176,12 @@ def fig_alibi(R):
              (("e1_d3",), ORANGE, "conflict-aware prompt (D3)"),
              (("e2_effects",), AQUA, "platform logs effects (E2)")]
     invs = [i for i in ORDER if any(r["investigator"] == i and r["arm"] in ("e1_d3", "e2_effects") for r in sub)]
-    fig, axes = plt.subplots(1, len(invs), figsize=(1.75 * len(invs) + 0.5, 2.3), sharey=True, squeeze=False)
-    for ax, inv in zip(axes[0], invs):
+    ncol = min(4, len(invs))
+    nrow = -(-len(invs) // ncol)
+    fig, axes = plt.subplots(nrow, ncol, figsize=(1.75 * ncol + 0.5, 2.2 * nrow), sharey=True, squeeze=False,
+                             gridspec_kw={"hspace": 0.75})
+    flat = [ax for row in axes for ax in row]
+    for ax, inv in zip(flat, invs):
         # Use the authors this investigator ran under the follow-ups, so every treatment sees the same boards.
         auth = {r["author"] for r in sub if r["investigator"] == inv and r["arm"] in ("e1_d3", "e2_effects")}
         for si, (arms, color, lab) in enumerate(treat):
@@ -197,8 +201,16 @@ def fig_alibi(R):
         ax.set_ylim(0, 105)
         ax.grid(axis="y", color=GRID, lw=0.6)
         ax.set_axisbelow(True)
-    axes[0][0].set_ylabel("Detection (%)")
-    fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.12), ncol=3, frameon=False, fontsize=7.2)
+    for row in axes:
+        row[0].set_ylabel("Detection (%)")
+    spare = flat[len(invs):]
+    for ax in spare:
+        ax.axis("off")
+    if spare:
+        h, lab = flat[0].get_legend_handles_labels()
+        spare[-1].legend(h, lab, loc="center", frameon=False, fontsize=7.2)
+    else:
+        fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.12), ncol=3, frameon=False, fontsize=7.2)
     save(fig, "fig4_alibi")
 
 
