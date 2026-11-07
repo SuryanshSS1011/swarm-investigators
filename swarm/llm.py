@@ -138,6 +138,12 @@ GPTOSS_MIN_MAX_TOKENS = 4000
 # bottom, and remembered per model for the rest of the process. None leaves the parameter out.
 GEMINI_EFFORT_LADDER = ("none", "minimal", "low", "medium", "high", None)
 
+# A model id may end in "@<effort>" to run the model above the study's floor, as exploratory follow-up E3 does
+# (docs/explore_reasoning.md). The suffix stays in the model string, so it enters the cache key and keeps these
+# calls apart from the floor calls, and it is stripped before the request. Claude gets that effort with adaptive
+# thinking (Opus always thinks, so it gets no thinking field), and Gemini gets that reasoning_effort directly.
+EFFORT_SUFFIXES = ("low", "medium", "high")
+
 # ---------------------------------------------------------------- retries and timeouts
 
 MAX_ATTEMPTS = 6
@@ -220,6 +226,16 @@ def provider_of(model: str) -> str:
     return split_model(model)[0]
 
 
+def split_effort(name: str) -> tuple[str, Optional[str]]:
+    """("claude-sonnet-5-5@high") -> ("claude-sonnet-5-5", "high"); a name with no suffix gets None."""
+    base, sep, effort = name.partition("@")
+    if not sep:
+        return name, None
+    if effort not in EFFORT_SUFFIXES:
+        raise ConfigError(f"unknown effort suffix {effort!r} in {name!r}; expected one of {EFFORT_SUFFIXES}")
+    return base, effort
+
+
 def _lookup(table: dict, model_id: str):
     if model_id in table:
         return table[model_id]
@@ -238,6 +254,7 @@ def price_for(provider: str, model_id: str) -> tuple[float, float]:
         return MOCK_PRICE
     if provider == "vllm":
         return (0.0, 0.0)  # Modal bills GPU time, not tokens
+    model_id = split_effort(model_id)[0]
     table_name, table = _PRICE_TABLES[provider]
     price = _lookup(table, model_id)
     if price is None:
@@ -381,17 +398,18 @@ def _is_claude_55(model_id: str) -> bool:
 
 def claude_params(model_id: str, system: str, user: str, max_tokens: int, temperature=None) -> dict:
     """Messages API parameters for one request. The Message Batches path sends exactly these too."""
+    model_id, effort = split_effort(model_id)
     params: dict[str, Any] = {
         "model": model_id,
         "max_tokens": max_tokens,
         "messages": [{"role": "user", "content": user}],
-        "output_config": {"effort": CLAUDE_EFFORT},
+        "output_config": {"effort": effort or CLAUDE_EFFORT},
     }
     if system:
         params["system"] = system
     thinking = _lookup(THINKING_FLOOR, model_id)
     if thinking is not None:
-        params["thinking"] = dict(thinking)
+        params["thinking"] = dict(thinking) if effort is None else {"type": "adaptive"}
     if temperature is not None:
         if _is_claude_55(model_id):
             _warn_once(f"temperature:{model_id}", "%s rejects temperature, so it is not sent (it still enters the"
@@ -554,6 +572,10 @@ def _call_gemini(name, system, user, max_tokens, temperature, replicate) -> LLMR
     price = price_for("gemini", model_id)
     api_key = _need_env("GEMINI_API_KEY")
     client = _client("gemini", lambda: make_openai_client(GEMINI_BASE_URL, api_key))
+    base, effort = split_effort(name)
+    if effort is not None:  # a set effort above the floor: no ladder
+        resp = _chat(client, base, system, user, temperature, {"max_tokens": max_tokens, "reasoning_effort": effort})
+        return _chat_result(resp, price, thinking_outside_completion=True)
     with _lock:
         start = _effort_floor.get(model_id, 0)
     for i in range(start, len(GEMINI_EFFORT_LADDER)):

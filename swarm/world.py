@@ -44,6 +44,12 @@ DISPLAY = {
     "vllm/qwen": "Qwen3-32B",
     "vllm/gptoss": "gpt-oss-20b",
     "openai/gpt-5.6-sol": "GPT-5.6 Sol",
+    # E3 (docs/explore_reasoning.md) runs these at high reasoning. They keep the base model's name and family, so
+    # the investigator's prompt is the same as at the floor.
+    "claude/claude-haiku-5-5@high": "Claude Haiku 5.5",
+    "claude/claude-sonnet-5-5@high": "Claude Sonnet 5.5",
+    "claude/claude-opus-5-5@high": "Claude Opus 5.5",
+    "gemini/gemini-3.8-flash@high": "Gemini 3.8 Flash",
     "mock/a": "Mock A",
     "mock/b": "Mock B",
 }
@@ -57,6 +63,10 @@ FAMILY = {
     "vllm/qwen": "alibaba",
     "vllm/gptoss": "openai",
     "openai/gpt-5.6-sol": "openai",
+    "claude/claude-haiku-5-5@high": "anthropic",
+    "claude/claude-sonnet-5-5@high": "anthropic",
+    "claude/claude-opus-5-5@high": "anthropic",
+    "gemini/gemini-3.8-flash@high": "google",
     "mock/a": "mock-a",
     "mock/b": "mock-b",
 }

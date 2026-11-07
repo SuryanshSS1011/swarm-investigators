@@ -497,3 +497,34 @@ def test_check_route_for_every_provider(monkeypatch):
         monkeypatch.setenv(var, "set")
         llm.check_route(model)
     llm.check_route("mock/anything")
+
+
+def test_effort_suffix_raises_claude_to_that_effort_with_adaptive_thinking(claude):
+    fake = claude([claude_message('{"ok": true}')])
+    for model, thinking in {"claude-haiku-5-5": {"type": "adaptive"}, "claude-sonnet-5-5": {"type": "adaptive"},
+                            "claude-opus-5-5": None}.items():
+        r = complete(f"claude/{model}@high", "", "hi", 16000, cache=False)
+        sent = fake.sent[-1]
+        assert r.error is None and sent["model"] == model and sent["output_config"] == {"effort": "high"}
+        assert sent.get("thinking") == thinking and ("thinking" in sent) == (thinking is not None)
+        assert r.cost_usd == llm.cost_usd(llm.CLAUDE_PRICES[model], r.input_tokens, r.output_tokens)
+
+
+def test_effort_suffix_is_part_of_the_cache_key_and_must_be_known():
+    assert llm.cache_key("claude/claude-sonnet-5-5@high", "", "u", 10, None, 0) != llm.cache_key(
+        "claude/claude-sonnet-5-5", "", "u", 10, None, 0)
+    assert llm.split_effort("gemini-3.8-flash@high") == ("gemini-3.8-flash", "high")
+    assert llm.split_effort("gemini-3.8-flash") == ("gemini-3.8-flash", None)
+    with pytest.raises(llm.ConfigError):
+        llm.split_effort("claude-sonnet-5-5@turbo")
+    assert llm.price_for("gemini", "gemini-3.8-flash@high") == llm.GEMINI_PRICES["gemini-3.8-flash"]
+
+
+def test_effort_suffix_sends_gemini_that_effort_without_the_ladder(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    made = fake_openai(monkeypatch, [chat_completion("hi", prompt=100, completion=10, total=0, reasoning=50)])
+    r = complete("gemini/gemini-3.8-flash@high", "sys", "a", 16000, cache=False)
+    sent = made[0].sent
+    assert r.text == "hi" and len(sent) == 1
+    assert sent[0]["model"] == "gemini-3.8-flash" and sent[0]["reasoning_effort"] == "high"
+    assert r.output_tokens == 60 and llm.gemini_effort("gemini-3.8-flash") == "none"
