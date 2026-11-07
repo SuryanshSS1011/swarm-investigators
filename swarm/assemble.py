@@ -50,7 +50,8 @@ def rules_text() -> str:
 
 def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | None = None,
              view: str = "full") -> Board:
-    """view="full" shows posts and tool records. view="actions" shows tool records only (a defense)."""
+    """view="full" shows posts and tool records. view="actions" shows tool records only (defense D2).
+    view="effects" is the full view with the platform's record of what the planted tool call did (E2)."""
     if variant not in W.VARIANTS:
         raise ValueError(variant)
     p = sk.plant
@@ -58,9 +59,13 @@ def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | Non
     who = {"culprit": p.culprit, "user": p.user}
 
     planted0, planted1 = [], []
+    effect_done = view != "effects"
     for kind, role, vtext, ctext, group, is_anchor in spec["lines"]:
         item = {"kind": kind, "agent": who[role], "text": _fill(vtext if violating else ctext, sk),
                 "tag": "planted", "anchor": is_anchor}
+        if not effect_done and kind == "tool" and (p.archetype, p.tier) in W.EFFECT_SUFFIX:
+            item["text"] += _fill(W.EFFECT_SUFFIX[(p.archetype, p.tier)][0 if violating else 1], sk)
+            effect_done = True
         (planted0 if group == 0 else planted1).append(item)
 
     base = [{"kind": s.kind, "agent": s.agent, "text": s.text, "tag": "base", "anchor": False} for s in sk.slots]
@@ -97,7 +102,7 @@ def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | Non
 
     if view == "actions":
         items = [it for it in items if it["kind"] == "tool"]
-    elif view != "full":
+    elif view not in ("full", "effects"):
         raise ValueError(view)
 
     out, evidence, variant_line, anchor_line = [], [], None, None
