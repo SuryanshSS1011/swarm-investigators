@@ -17,3 +17,4 @@ __pycache__/
 # experiment data (compressed results are committed separately under results/)
 data/kt/
 data/main/
+uv.lock
