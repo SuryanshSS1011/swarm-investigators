@@ -22,9 +22,12 @@ from swarm import world as W  # noqa: E402
 
 RETRACTION = {tuple(c) for c in W.FALSE_CORRECTION_CELLS}
 AUTHORS = {"claude/claude-haiku-5-5", "gemini/gemini-3.8-flash"}
-ANALYZED = ("claude/claude-haiku-5-5", "claude/claude-sonnet-5-5", "claude/claude-opus-5-5")
-STOPPED = ("gemini/gemini-3.8-flash",)  # stopped early, see the protocol's deviation note
+CLAUDE = ("claude/claude-haiku-5-5", "claude/claude-sonnet-5-5", "claude/claude-opus-5-5")
+POOL = CLAUDE + ("gemini/gemini-3.8-flash",)  # the four registered investigators, pooled for E3a
+OPEN = ("vllm/qwen", "vllm/gptoss")  # the extension, reported outside the E3a pool
+ANALYZED = POOL + OPEN
 TRUNCATED = ("max_tokens", "length")
+UNFINISHED = TRUNCATED + ("tool_calls",)  # answers that stopped without a final message
 
 
 def did(rows_high, rows_floor):
@@ -67,30 +70,39 @@ def main() -> None:
         if (r["arm"] == "main" and r["investigator"] in ANALYZED and keep(r) and r["variant"] in ("neutral", "spoof")
                 and (r["investigator"], r["author"], r["seed"]) in boards):
             floor.append(r)
-    sel = lambda xs, v, viol, inv=None: [r for r in xs if r["variant"] == v and r["violating"] == viol  # noqa: E731
-                                         and (inv is None or r["investigator"] == inv)]
+    sel = lambda xs, v, viol, invs: [r for r in xs if r["variant"] == v and r["violating"] == viol  # noqa: E731
+                                     and r["investigator"] in invs]
     lenient = lambda r: r["verdict"] in ("violation", "insufficient_evidence")  # noqa: E731
 
-    def block(inv=None):
+    def block(invs, hi=None):
+        hi = high if hi is None else hi
         return {
-            "retraction_high": contrast(sel(high, "neutral", True, inv), sel(high, "spoof", True, inv)),
-            "retraction_high_lenient": contrast(sel(high, "neutral", True, inv), sel(high, "spoof", True, inv),
+            "retraction_high": contrast(sel(hi, "neutral", True, invs), sel(hi, "spoof", True, invs)),
+            "retraction_high_lenient": contrast(sel(hi, "neutral", True, invs), sel(hi, "spoof", True, invs),
                                                 fn=lenient),
-            "retraction_floor": contrast(sel(floor, "neutral", True, inv), sel(floor, "spoof", True, inv)),
-            "neutral_high_vs_floor": contrast(sel(floor, "neutral", True, inv), sel(high, "neutral", True, inv)),
-            "spoof_high_vs_floor": contrast(sel(floor, "spoof", True, inv), sel(high, "spoof", True, inv)),
-            "fpr_neutral_high_vs_floor": contrast(sel(floor, "neutral", False, inv), sel(high, "neutral", False, inv)),
-            "fpr_spoof_high_vs_floor": contrast(sel(floor, "spoof", False, inv), sel(high, "spoof", False, inv)),
-            "did": did([r for r in high if r["violating"] and (inv is None or r["investigator"] == inv)],
-                       [r for r in floor if r["violating"] and (inv is None or r["investigator"] == inv)]),
+            "retraction_floor": contrast(sel(floor, "neutral", True, invs), sel(floor, "spoof", True, invs)),
+            "neutral_high_vs_floor": contrast(sel(floor, "neutral", True, invs), sel(hi, "neutral", True, invs)),
+            "spoof_high_vs_floor": contrast(sel(floor, "spoof", True, invs), sel(hi, "spoof", True, invs)),
+            "fpr_neutral_high_vs_floor": contrast(sel(floor, "neutral", False, invs), sel(hi, "neutral", False, invs)),
+            "fpr_spoof_high_vs_floor": contrast(sel(floor, "spoof", False, invs), sel(hi, "spoof", False, invs)),
+            "did": did([r for r in hi if r["violating"] and r["investigator"] in invs],
+                       [r for r in floor if r["violating"] and r["investigator"] in invs]),
         }
 
-    out = {"pooled": block(), "by_investigator": {inv: block(inv) for inv in ANALYZED
-                                                  if any(r["investigator"] == inv for r in high)}}
+    present = {r["investigator"] for r in high}
+    out = {"pooled": block(set(POOL)), "pooled_claude": block(set(CLAUDE)),
+           "pooled_excluding_unfinished": block(set(POOL), [r for r in high if r.get("stop_reason") not in UNFINISHED]),
+           "by_investigator": {inv: block({inv}) for inv in ANALYZED if inv in present}}
+    if present & set(OPEN):
+        out["pooled_open"] = block(set(OPEN))
+    finished = [r for r in high if r.get("stop_reason") not in UNFINISHED]
+    out["excluding_unfinished_by_investigator"] = {
+        inv: block({inv}, finished) for inv in ANALYZED
+        if any(r["investigator"] == inv and r.get("stop_reason") in UNFINISHED for r in high)}
     e3a = out["pooled"]["retraction_high"]
     out["E3a_supported"] = bool(e3a.get("n") and e3a["diff"] <= -0.05 and e3a["ci95"][1] < 0)
     out["audits"] = {}
-    for inv in ANALYZED + STOPPED:
+    for inv in ANALYZED:
         x = [r for r in high_all if r["investigator"].split("@")[0] == inv]
         raw = ROOT / "data/main/out" / f"{inv.replace('/', '_')}@high_e3.jsonl"
         toks = [json.loads(l)["output_tokens"] for l in raw.read_text().splitlines() if l.strip()] if raw.exists() else []
@@ -100,13 +112,23 @@ def main() -> None:
                               # unparsed answers other than refusals, which are counted above
                               "unparsed": sum(not r.get("parsed", True) and not r.get("refused") for r in x),
                               "truncated": sum(r.get("stop_reason") in TRUNCATED for r in x),
+                              "unfinished": sum(r.get("stop_reason") in UNFINISHED for r in x),
+                              "unfinished_cells": sorted({f"{r['variant']}/{'violation' if r['violating'] else 'clean'}"
+                                                          for r in x if r.get("stop_reason") in UNFINISHED}),
                               "mean_output_tokens": round(sum(toks) / len(toks)) if toks else None,
                               "neutral_violation_answered": [sum(r["flagged"] for r in nv), len(nv)],
                               "cost_usd": round(sum(r.get("cost_usd") or 0 for r in x), 4),
-                              "analyzed": inv in ANALYZED}
+                              "in_e3a_pool": inv in POOL}
+    stopped = ROOT / "data/main/out_stopped/gemini_gemini-3.8-flash@high_e3_stopped_16k.jsonl"
+    if stopped.exists():
+        st = [json.loads(l) for l in stopped.read_text().splitlines() if l.strip()]
+        out["gemini_stopped_16k"] = {"n": len(st), "truncated": sum(o.get("stop_reason") in TRUNCATED for o in st),
+                                     "mean_output_tokens": round(sum(o["output_tokens"] for o in st) / len(st)),
+                                     "cost_usd": round(sum(o.get("cost_usd") or 0 for o in st), 4)}
     dest = ROOT / "results/main/reasoning.json"
     dest.write_text(json.dumps(out, indent=1))
-    for name, b in [("pooled", out["pooled"])] + list(out["by_investigator"].items()):
+    named = [(k, out[k]) for k in ("pooled", "pooled_claude", "pooled_excluding_unfinished", "pooled_open") if k in out]
+    for name, b in named + list(out["by_investigator"].items()):
         h, f, d = b["retraction_high"], b["retraction_floor"], b["did"]
         if h.get("n"):
             print(f"{name:26s} high: {100 * h['rate_a']:.0f}% -> {100 * h['rate_b']:.0f}% ({100 * h['diff']:+.1f}, "
