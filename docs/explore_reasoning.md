@@ -45,7 +45,8 @@ retraction, but no investigator has been tested above its floor.
 
 ## Deviation (November 7, about 13:20 ET)
 
-Gemini 3.8 Flash at reasoning_effort "high" averaged about 12,600 output tokens per audit. 4 of its first 18
+Gemini 3.8 Flash at reasoning_effort "high" averaged about 12,200 output tokens per audit (corrected from 12,600,
+which was the mean of the first 17 audits). 4 of its first 18
 answers stopped at the 16,000-token limit, and each audit cost about $0.05, so the $5 cap would have stopped it near
 100 of 160 audits with about a quarter of the answers cut off. The Gemini run was stopped after 18 audits and $0.90,
 before any E3 verdict was looked at, and the user chose to report it as stopped rather than change its settings.

@@ -92,9 +92,16 @@ def main() -> None:
     out["audits"] = {}
     for inv in ANALYZED + STOPPED:
         x = [r for r in high_all if r["investigator"].split("@")[0] == inv]
+        raw = ROOT / "data/main/out" / f"{inv.replace('/', '_')}@high_e3.jsonl"
+        toks = [json.loads(l)["output_tokens"] for l in raw.read_text().splitlines() if l.strip()] if raw.exists() else []
+        nv = [r for r in x if r["variant"] == "neutral" and r["violating"] and not r.get("refused")]
         out["audits"][inv] = {"n": len(x), "refused": sum(bool(r.get("refused")) for r in x),
-                              "unparsed": sum(not r.get("parsed", True) for r in x),
+                              "refused_neutral": sum(bool(r.get("refused")) for r in x if r["variant"] == "neutral"),
+                              # unparsed answers other than refusals, which are counted above
+                              "unparsed": sum(not r.get("parsed", True) and not r.get("refused") for r in x),
                               "truncated": sum(r.get("stop_reason") in TRUNCATED for r in x),
+                              "mean_output_tokens": round(sum(toks) / len(toks)) if toks else None,
+                              "neutral_violation_answered": [sum(r["flagged"] for r in nv), len(nv)],
                               "cost_usd": round(sum(r.get("cost_usd") or 0 for r in x), 4),
                               "analyzed": inv in ANALYZED}
     dest = ROOT / "results/main/reasoning.json"

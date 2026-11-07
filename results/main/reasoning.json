@@ -522,32 +522,56 @@
   "claude/claude-haiku-5-5": {
    "n": 160,
    "refused": 0,
+   "refused_neutral": 0,
    "unparsed": 3,
    "truncated": 0,
+   "mean_output_tokens": 2592,
+   "neutral_violation_answered": [
+    39,
+    40
+   ],
    "cost_usd": 0.1541,
    "analyzed": true
   },
   "claude/claude-sonnet-5-5": {
    "n": 160,
    "refused": 1,
-   "unparsed": 1,
+   "refused_neutral": 1,
+   "unparsed": 0,
    "truncated": 0,
+   "mean_output_tokens": 1014,
+   "neutral_violation_answered": [
+    40,
+    40
+   ],
    "cost_usd": 1.8206,
    "analyzed": true
   },
   "claude/claude-opus-5-5": {
    "n": 80,
    "refused": 7,
-   "unparsed": 7,
+   "refused_neutral": 7,
+   "unparsed": 0,
    "truncated": 0,
+   "mean_output_tokens": 844,
+   "neutral_violation_answered": [
+    16,
+    16
+   ],
    "cost_usd": 1.689,
    "analyzed": true
   },
   "gemini/gemini-3.8-flash": {
    "n": 18,
    "refused": 0,
+   "refused_neutral": 0,
    "unparsed": 4,
    "truncated": 4,
+   "mean_output_tokens": 12232,
+   "neutral_violation_answered": [
+    6,
+    6
+   ],
    "cost_usd": 0.9022,
    "analyzed": false
   }
