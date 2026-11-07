@@ -13,3 +13,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .DS_Store
+
+# experiment data (compressed results are committed separately under results/)
+data/kt/
+data/main/
