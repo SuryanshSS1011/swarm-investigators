@@ -70,3 +70,9 @@ Each model is compared with its own main-arm audits of the same boards at the fl
 investigator and pooled with each other, outside the E3a pool of the four registered investigators. They run from
 the laptop through `scripts/run_openweight_e3.sh`, like the main study's open-weight half, and Modal bills GPU time
 rather than tokens, so there is no token cap.
+
+## Budget change (November 7, about 14:25 ET)
+
+The Gemini rerun averaged about $0.08 per audit rather than the $0.05 seen at 16,000 tokens, so the $12 cap would
+have stopped it near 150 of 160 audits. With the user's approval of more than $20, the cap rises to $15. No E3
+verdict from the rerun had been looked at.
