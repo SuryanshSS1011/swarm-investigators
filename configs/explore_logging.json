@@ -49,9 +49,7 @@
       "e2_effects": "all"
     },
     "claude/claude-sonnet-5-5": {
-      "e2_effects": [
-        "claude/claude-haiku-5-5"
-      ]
+      "e2_effects": "all"
     },
     "gemini/gemini-3.8-flash": {
       "e2_effects": "all"
@@ -70,6 +68,11 @@
     },
     "vllm/gptoss": {
       "e2_effects": "all"
+    },
+    "claude/claude-opus-5-5": {
+      "e2_effects": [
+        "claude/claude-haiku-5-5"
+      ]
     }
   },
   "max_tokens": {
@@ -78,6 +81,7 @@
     "gemini/gemini-3.8-flash": 3000,
     "gemini/gemini-4-argon": 6000,
     "vllm/qwen": 1200,
-    "vllm/gptoss": 4000
+    "vllm/gptoss": 4000,
+    "claude/claude-opus-5-5": 4000
   }
 }

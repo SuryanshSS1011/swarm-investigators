@@ -84,12 +84,8 @@
       "e1_d3": "all"
     },
     "claude/claude-sonnet-5-5": {
-      "e1_main": [
-        "claude/claude-haiku-5-5"
-      ],
-      "e1_d3": [
-        "claude/claude-haiku-5-5"
-      ]
+      "e1_main": "all",
+      "e1_d3": "all"
     },
     "claude/claude-opus-5-5": {
       "e1_main": [
@@ -97,10 +93,6 @@
       ],
       "e1_d3": [
         "claude/claude-haiku-5-5"
-      ],
-      "e1_d3_variants": [
-        "spoof",
-        "self_vouch"
       ]
     },
     "gemini/gemini-3.8-flash": {

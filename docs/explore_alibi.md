@@ -39,3 +39,7 @@ tool records are the same on violation and clean boards, so only the agents' pos
    violation boards and the false-positive rate on clean boards.
 3. Every result will be reported as exploratory, with paired differences, exact McNemar tests and seed-bootstrap
    intervals, and with no multiplicity correction.
+
+## Extension (November 7, about 09:50 ET)
+
+After the first results, the Anthropic budget turned out to be $100 rather than $40, so Opus was extended to every variant on Haiku's boards and Sonnet to Gemini's boards as well. The open-weight investigators were added in the same Modal session as the main study. Nothing else changed.
