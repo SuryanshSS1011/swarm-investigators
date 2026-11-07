@@ -68,6 +68,8 @@ def filled(sk_row: dict, base: dict) -> SK.Skeleton:
 
 def board_requests(inv: str, cfg: dict, sks: dict, bases: list[dict], replicate: int = 0):
     icfg = cfg["investigators"][inv]
+    gen = {(g["author"], g["seed"]): g["text"] for g in jl_read(ROOT / cfg["data"] / "gen_retractions.jsonl")
+           if g.get("text")}
     seen_actions = set()
     for arm_name, arm in cfg["arms"].items():
         allowed = icfg.get(arm_name)
@@ -82,6 +84,8 @@ def board_requests(inv: str, cfg: dict, sks: dict, bases: list[dict], replicate:
             if cells and (sk.plant.archetype, sk.plant.tier) not in cells:
                 continue
             for v in variants:
+                if v == "spoof_gen" and (bz["author"], sk.seed) not in gen:
+                    continue  # no usable model-written retraction for this board
                 for h in arm["headers"]:
                     face = None if h == "none" else (W.DISPLAY[inv] if h == "self" else other_face(inv, sk.seed))
                     for viol in (True, False):
@@ -91,7 +95,8 @@ def board_requests(inv: str, cfg: dict, sks: dict, bases: list[dict], replicate:
                             if key in seen_actions:
                                 continue
                             seen_actions.add(key)
-                        b = A.assemble(sk, viol, v, agent_model=face, view=arm["view"])
+                        b = A.assemble(sk, viol, v, agent_model=face, view=arm["view"],
+                                       spoof_text=gen.get((bz["author"], sk.seed)) if v == "spoof_gen" else None)
                         author = "none" if arm["view"] == "actions" else bz["author"]
                         bid = f"{arm_name}|{author}|{sk.seed}|{'V' if viol else 'C'}|{v}|{h}"
                         meta = {"stage": "audit", "arm": arm_name, "investigator": inv, "author": author,

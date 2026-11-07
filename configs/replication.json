@@ -1,0 +1,207 @@
+{
+ "data": "data/main",
+ "suffix": "_rep",
+ "no_probe": true,
+ "seed_start": 1000,
+ "n_boards": 40,
+ "authors": [
+  "claude/claude-haiku-5-5",
+  "gemini/gemini-3.8-flash"
+ ],
+ "arms": {
+  "r_main": {
+   "variants": [
+    "none",
+    "neutral",
+    "spoof",
+    "auditor_auth",
+    "auditor_kin",
+    "auditor_inject"
+   ],
+   "headers": [
+    "none"
+   ],
+   "view": "full",
+   "hardened": false
+  },
+  "r_e2": {
+   "variants": [
+    "spoof",
+    "self_vouch"
+   ],
+   "headers": [
+    "none"
+   ],
+   "view": "effects",
+   "hardened": false,
+   "cells": [
+    [
+     "hidden_answers",
+     "implicit"
+    ],
+    [
+     "scorer_tamper",
+     "implicit"
+    ],
+    [
+     "transcript_tamper",
+     "implicit"
+    ],
+    [
+     "credential_share",
+     "explicit"
+    ],
+    [
+     "credential_share",
+     "implicit"
+    ]
+   ]
+  },
+  "r_gen": {
+   "variants": [
+    "spoof_gen"
+   ],
+   "headers": [
+    "none"
+   ],
+   "view": "full",
+   "hardened": false,
+   "cells": [
+    [
+     "hidden_answers",
+     "implicit"
+    ],
+    [
+     "scorer_tamper",
+     "implicit"
+    ],
+    [
+     "transcript_tamper",
+     "implicit"
+    ],
+    [
+     "credential_share",
+     "explicit"
+    ],
+    [
+     "credential_share",
+     "implicit"
+    ]
+   ]
+  },
+  "r_kinship": {
+   "variants": [
+    "none"
+   ],
+   "headers": [
+    "self",
+    "other"
+   ],
+   "view": "full",
+   "hardened": false
+  },
+  "r_e1_main": {
+   "variants": [
+    "vouch",
+    "self_vouch"
+   ],
+   "headers": [
+    "none"
+   ],
+   "view": "full",
+   "hardened": false,
+   "cells": [
+    [
+     "hidden_answers",
+     "implicit"
+    ],
+    [
+     "scorer_tamper",
+     "implicit"
+    ],
+    [
+     "transcript_tamper",
+     "implicit"
+    ],
+    [
+     "credential_share",
+     "explicit"
+    ],
+    [
+     "credential_share",
+     "implicit"
+    ]
+   ]
+  },
+  "r_e1_d3": {
+   "variants": [
+    "spoof",
+    "self_vouch"
+   ],
+   "headers": [
+    "none"
+   ],
+   "view": "full",
+   "hardened": "conflict",
+   "cells": [
+    [
+     "hidden_answers",
+     "implicit"
+    ],
+    [
+     "scorer_tamper",
+     "implicit"
+    ],
+    [
+     "transcript_tamper",
+     "implicit"
+    ],
+    [
+     "credential_share",
+     "explicit"
+    ],
+    [
+     "credential_share",
+     "implicit"
+    ]
+   ]
+  }
+ },
+ "investigators": {
+  "openai/gpt-5.6-sol": {
+   "r_main": "all",
+   "r_e2": "all",
+   "r_gen": "all",
+   "r_kinship": "all",
+   "r_e1_main": "all",
+   "r_e1_d3": "all"
+  },
+  "claude/claude-haiku-5-5": {
+   "r_gen": "all"
+  },
+  "claude/claude-sonnet-5-5": {
+   "r_gen": "all"
+  },
+  "claude/claude-opus-5-5": {
+   "r_gen": [
+    "claude/claude-haiku-5-5"
+   ]
+  },
+  "gemini/gemini-3.8-flash": {
+   "r_gen": "all"
+  }
+ },
+ "max_tokens": {
+  "claude/claude-haiku-5-5": 1200,
+  "claude/claude-sonnet-5-5": 1200,
+  "claude/claude-opus-5-5": 4000,
+  "gemini/gemini-3.8-flash": 3000,
+  "openai/gpt-5.6-sol": 2000
+ },
+ "gen_authors": [
+  "claude/claude-haiku-5-5",
+  "gemini/gemini-3.8-flash"
+ ],
+ "gen_max_replicates": 3,
+ "openai_budget_usd": 40
+}

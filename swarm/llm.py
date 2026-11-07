@@ -99,8 +99,12 @@ GEMINI_PRICES = {
     "gemini-3.1-pro-preview": (2.0, 12.0),
     "gemini-3.1-flash-lite": (0.25, 1.50),
 }
-# OpenAI has no entries yet. Add a model here before its first call, or the call raises ConfigError.
-OPENAI_PRICES: dict[str, tuple[float, float]] = {}
+# OpenAI list prices (developers.openai.com model page, checked 2026-11-07). Add a model before its first call,
+# or the call raises ConfigError. Flex processing, when SWARM_OPENAI_SERVICE_TIER=flex, bills at about half of
+# these rates, so recorded costs are an upper bound in that case.
+OPENAI_PRICES: dict[str, tuple[float, float]] = {"gpt-5.6-sol": (4.0, 20.0)}
+# Lowest reasoning effort each OpenAI model accepts, matching the main study's rule of the lowest setting allowed.
+OPENAI_REASONING = {"gpt-5.6-sol": "none"}
 # OpenRouter reports each call's cost in the response. This table is only a fallback for when it does not.
 OPENROUTER_PRICES: dict[str, tuple[float, float]] = {}
 # Mock calls have a price so the budget stop can be tested. Nothing is billed.
@@ -577,7 +581,13 @@ def _call_openai(name, system, user, max_tokens, temperature, replicate) -> LLMR
     api_key = _need_env("OPENAI_API_KEY")
     client = _client("openai", lambda: make_openai_client(OPENAI_BASE_URL, api_key))
     # Reasoning models reject max_tokens; max_completion_tokens works for every current chat model.
-    resp = _chat(client, name, system, user, temperature, {"max_completion_tokens": max_tokens})
+    args = {"max_completion_tokens": max_tokens}
+    if name in OPENAI_REASONING:
+        args["reasoning_effort"] = OPENAI_REASONING[name]
+    tier = os.environ.get("SWARM_OPENAI_SERVICE_TIER")
+    if tier:
+        args["service_tier"] = tier
+    resp = _chat(client, name, system, user, temperature, args)
     return _chat_result(resp, price)
 
 

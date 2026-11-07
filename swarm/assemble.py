@@ -49,11 +49,13 @@ def rules_text() -> str:
 
 
 def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | None = None,
-             view: str = "full") -> Board:
+             view: str = "full", spoof_text: str | None = None) -> Board:
     """view="full" shows posts and tool records. view="actions" shows tool records only (defense D2).
     view="effects" is the full view with the platform's record of what the planted tool call did (E2)."""
-    if variant not in W.VARIANTS:
+    if variant not in W.VARIANTS and variant not in W.VARIANTS_EXTRA:
         raise ValueError(variant)
+    if variant == "spoof_gen" and not spoof_text:
+        raise ValueError("spoof_gen needs spoof_text")
     p = sk.plant
     spec = W.PLANTED[(p.archetype, p.tier)]
     who = {"culprit": p.culprit, "user": p.user}
@@ -87,6 +89,8 @@ def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | Non
         posts = []
         if variant in ("spoof", "self_vouch"):
             posts.append((p.culprit, _fill(W.SPOOF_TEXT[(p.archetype, p.tier)], sk)))
+        if variant == "spoof_gen":
+            posts.append((p.culprit, spoof_text))
         if variant in ("vouch", "self_vouch"):
             if (p.archetype, p.tier) not in W.VOUCH_TEXT:
                 raise ValueError(f"no alibi text for {(p.archetype, p.tier)}")
