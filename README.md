@@ -1,6 +1,6 @@
 # The Last Word Wins
 
-**Retractions and peer alibis in swarm logs defeat LLM incident investigators.** This repository holds the
+**Retractions and peer alibis in swarm logs mislead LLM incident investigators.** This repository holds the
 benchmark, pre-registrations, raw outputs and analysis for an entry in Apart Research's
 [Swarm Alignment Hackathon](https://apartresearch.com/sprints/swarm-alignment-2026) (November 2026).
 
