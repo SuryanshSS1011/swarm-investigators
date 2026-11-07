@@ -6,7 +6,7 @@ import re
 
 from . import world as W
 
-LINE = re.compile(r"^L(\d{3}) \S+ (zz-\d{2}) (post|tool): (.*)$")
+LINE = re.compile(r"^L(\d{3}) \S+ ([a-z]{2}-\d{2}) (post|tool): (.*)$")
 PATH = re.compile(r"\bpath=(\S+)")
 URL = re.compile(r"\burl=https?://([^/\s]+)")
 CRED = re.compile(r"\b(hub_live_[0-9a-f]{6,}|HUB_TOKEN=|sk-[A-Za-z0-9]{16,}|ghp_[A-Za-z0-9]{16,})")

@@ -116,7 +116,7 @@ def _interleave(rng: random.Random, seqs: list[list[tuple]]) -> list[tuple]:
 def build(seed: int, archetype: str, tier: str) -> Skeleton:
     rng = random.Random(seed * 7919 + 17)
     ids = rng.sample(range(1, 61), N_AGENTS)
-    agents = [f"zz-{i:02d}" for i in ids]
+    agents = [f"{W.AGENT_PREFIX}{i:02d}" for i in ids]
     coordinator, workers = agents[0], agents[1:]
 
     pool = rng.sample(range(10, 100), 2 * len(workers) + 1)

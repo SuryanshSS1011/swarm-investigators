@@ -1,0 +1,30 @@
+{
+  "data": "data/main",
+  "seed_start": 1000,
+  "n_boards": 40,
+  "authors": ["claude/claude-haiku-5-5", "gemini/gemini-3.8-flash", "vllm/qwen", "vllm/gptoss"],
+  "arms": {
+    "main": {"variants": ["none", "neutral", "spoof", "auditor_auth", "auditor_kin", "auditor_inject"],
+             "headers": ["none"], "view": "full", "hardened": false},
+    "kinship": {"variants": ["none", "auditor_kin"], "headers": ["self", "other"], "view": "full", "hardened": false},
+    "d1": {"variants": ["none", "spoof", "auditor_auth", "auditor_kin", "auditor_inject"], "headers": ["none"],
+           "view": "full", "hardened": true},
+    "d2": {"variants": ["none"], "headers": ["none"], "view": "actions", "hardened": false}
+  },
+  "investigators": {
+    "claude/claude-haiku-5-5": {"main": "all", "kinship": "all", "d1": "all", "d2": "all", "probe": "all"},
+    "claude/claude-sonnet-5-5": {"main": ["claude/claude-haiku-5-5", "gemini/gemini-3.8-flash"],
+                                 "kinship": ["claude/claude-haiku-5-5"], "d1": ["claude/claude-haiku-5-5"],
+                                 "d2": "all", "probe": "all"},
+    "claude/claude-opus-5-5": {"main": ["claude/claude-haiku-5-5"], "d1": ["claude/claude-haiku-5-5"],
+                               "d1_variants": ["spoof", "auditor_auth"]},
+    "gemini/gemini-3.8-flash": {"main": "all", "kinship": "all", "d1": "all", "d2": "all", "probe": "all"},
+    "gemini/gemini-4-argon": {"main": ["gemini/gemini-3.8-flash", "claude/claude-haiku-5-5"]},
+    "vllm/qwen": {"main": "all", "kinship": "all", "d1": "all", "d2": "all", "probe": "all"},
+    "vllm/gptoss": {"main": "all", "kinship": "all", "d1": "all", "d2": "all", "probe": "all"}
+  },
+  "max_tokens": {
+    "claude/claude-haiku-5-5": 1200, "claude/claude-sonnet-5-5": 1200, "claude/claude-opus-5-5": 4000,
+    "gemini/gemini-3.8-flash": 3000, "gemini/gemini-4-argon": 6000, "vllm/qwen": 1200, "vllm/gptoss": 4000
+  }
+}
