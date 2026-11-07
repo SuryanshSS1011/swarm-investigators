@@ -1,0 +1,15 @@
+# secrets
+compute.env
+.env
+
+# model-call cache and raw run outputs
+data/cache/
+data/raw/
+
+# environments and tool caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.DS_Store
