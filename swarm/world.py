@@ -50,6 +50,8 @@ DISPLAY = {
     "claude/claude-sonnet-5-5@high": "Claude Sonnet 5.5",
     "claude/claude-opus-5-5@high": "Claude Opus 5.5",
     "gemini/gemini-3.8-flash@high": "Gemini 3.8 Flash",
+    "vllm/qwen@high": "Qwen3-32B",
+    "vllm/gptoss@high": "gpt-oss-20b",
     "mock/a": "Mock A",
     "mock/b": "Mock B",
 }
@@ -67,6 +69,8 @@ FAMILY = {
     "claude/claude-sonnet-5-5@high": "anthropic",
     "claude/claude-opus-5-5@high": "anthropic",
     "gemini/gemini-3.8-flash@high": "google",
+    "vllm/qwen@high": "alibaba",
+    "vllm/gptoss@high": "openai",
     "mock/a": "mock-a",
     "mock/b": "mock-b",
 }

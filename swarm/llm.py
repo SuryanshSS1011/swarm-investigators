@@ -276,7 +276,7 @@ def check_route(model: str) -> None:
         price_for("claude", name)
         _need_env("ANTHROPIC_API_KEY")
     elif provider == "vllm":
-        vllm_endpoint(name)
+        vllm_endpoint(split_effort(name)[0])
     elif provider == "openrouter":
         _need_env("OPENROUTER_API_KEY")
     elif provider == "gemini":
@@ -500,19 +500,22 @@ def vllm_endpoint(name: str) -> tuple[str, str]:
     return base_url, served
 
 
-def vllm_reasoning_args(served: str, max_tokens: int) -> dict:
+def vllm_reasoning_args(served: str, max_tokens: int, effort: Optional[str] = None) -> dict:
     """Lowest reasoning each open model allows, as in collusion-sting: gpt-oss effort low, with room in max_tokens
-    for its reasoning, and thinking off for everything else (Qwen3 reads the switch; other templates ignore it)."""
+    for its reasoning, and thinking off for everything else (Qwen3 reads the switch; other templates ignore it).
+    With an effort suffix (E3), gpt-oss gets that reasoning effort and Qwen3 gets thinking on, its only higher
+    setting."""
     if "gpt-oss" in served.lower():
-        return {"reasoning_effort": "low", "max_tokens": max(max_tokens, GPTOSS_MIN_MAX_TOKENS)}
-    return {"max_tokens": max_tokens, "extra_body": {"chat_template_kwargs": {"enable_thinking": False}}}
+        return {"reasoning_effort": effort or "low", "max_tokens": max(max_tokens, GPTOSS_MIN_MAX_TOKENS)}
+    return {"max_tokens": max_tokens, "extra_body": {"chat_template_kwargs": {"enable_thinking": effort is not None}}}
 
 
 def _call_vllm(name, system, user, max_tokens, temperature, replicate) -> LLMResult:
-    base_url, served = vllm_endpoint(name)
+    base, effort = split_effort(name)
+    base_url, served = vllm_endpoint(base)
     api_key = os.environ.get("VLLM_API_KEY", "").strip() or "EMPTY"
     client = _client(("vllm", base_url), lambda: make_openai_client(base_url, api_key, VLLM_TIMEOUT_S))
-    resp = _chat(client, served, system, user, temperature, vllm_reasoning_args(served, max_tokens))
+    resp = _chat(client, served, system, user, temperature, vllm_reasoning_args(served, max_tokens, effort))
     return _chat_result(resp, price_for("vllm", name))
 
 

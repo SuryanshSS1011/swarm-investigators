@@ -528,3 +528,18 @@ def test_effort_suffix_sends_gemini_that_effort_without_the_ladder(monkeypatch):
     assert r.text == "hi" and len(sent) == 1
     assert sent[0]["model"] == "gemini-3.8-flash" and sent[0]["reasoning_effort"] == "high"
     assert r.output_tokens == 60 and llm.gemini_effort("gemini-3.8-flash") == "none"
+
+
+def test_effort_suffix_turns_on_qwen_thinking_and_raises_gptoss_effort(monkeypatch):
+    monkeypatch.setenv("VLLM_BASE_URL_QWEN", "https://qwen.invalid/v1")
+    monkeypatch.setenv("VLLM_BASE_URL_GPTOSS", "https://gptoss.invalid/v1")
+    monkeypatch.setenv("VLLM_API_KEY", "test-key")
+    made = fake_openai(monkeypatch, [chat_completion("hi")])
+    complete("vllm/qwen@high", "sys", "u", 24000, cache=False)
+    complete("vllm/gptoss@high", "", "u", 24000, cache=False)
+    qs, gs = made[0].sent[0], made[1].sent[0]
+    assert made[0].base_url == "https://qwen.invalid/v1" and qs["model"] == "Qwen/Qwen3-32B-FP8"
+    assert qs["extra_body"] == {"chat_template_kwargs": {"enable_thinking": True}} and qs["max_tokens"] == 24000
+    assert made[1].base_url == "https://gptoss.invalid/v1" and gs["model"] == "openai/gpt-oss-20b"
+    assert gs["reasoning_effort"] == "high" and gs["max_tokens"] == 24000
+    llm.check_route("vllm/qwen@high")
