@@ -105,7 +105,7 @@ def fig_dumbbell(R):
     sub = [r for r in R if r["arm"] == "main" and r["header"] == "none" and r["violating"]
            and r["variant"] in ("neutral", "spoof")]
     invs = [i for i in ORDER if any(r["investigator"] == i for r in sub)]
-    fig, axes = plt.subplots(1, 2, figsize=(8.2, 0.42 * len(invs) + 1.0), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(8.2, 0.34 * len(invs) + 1.0), sharey=True)
     for ax, kd, title in ((axes[0], "retraction", "Retraction of an admission"), (axes[1], "fake", "Fake tool record")):
         ylabels = []
         for yi, inv in enumerate(invs + ["pooled"]):
@@ -178,7 +178,7 @@ def fig_alibi(R):
     invs = [i for i in ORDER if any(r["investigator"] == i and r["arm"] in ("e1_d3", "e2_effects") for r in sub)]
     ncol = min(4, len(invs))
     nrow = -(-len(invs) // ncol)
-    fig, axes = plt.subplots(nrow, ncol, figsize=(1.75 * ncol + 0.5, 2.2 * nrow), sharey=True, squeeze=False,
+    fig, axes = plt.subplots(nrow, ncol, figsize=(1.75 * ncol + 0.5, 1.95 * nrow), sharey=True, squeeze=False,
                              gridspec_kw={"hspace": 0.75})
     flat = [ax for row in axes for ax in row]
     for ax, inv in zip(flat, invs):
