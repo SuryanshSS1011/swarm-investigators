@@ -97,16 +97,23 @@ def main():
                 cl = [r for r in rows if not r["violating"]]
                 pairs = [(bool(r["flagged"]), fixed[k]) for r in v
                          if (k := (FIXED_ARM[c], inv, r["author"], r["seed"], True)) in fixed]
+                fp_pairs = [(bool(r["flagged"]), fixed[k]) for r in cl
+                            if (k := (FIXED_ARM[c], inv, r["author"], r["seed"], False)) in fixed]
                 res["retest"][f"{c}|{inv}|posts_vs_{t}"] = {
                     "own_target": inv == t, "detection": rate([bool(r["flagged"]) for r in v]),
                     "false_positive": rate([bool(r["false_positive"]) for r in cl]),
+                    "fixed_fp_same_twins": rate([y for _, y in fp_pairs]) if fp_pairs else None,
                     "fixed_retraction_same_boards": rate([y for _, y in pairs]) if pairs else None,
                     "vs_fixed": mcnemar(pairs) if pairs else None}
         own = [r for r in retest if r["condition"] == c and r["investigator"] == r["attack_target"] and r["violating"]]
         pairs = [(bool(r["flagged"]), fixed[k]) for r in own
                  if (k := (FIXED_ARM[c], r["investigator"], r["author"], r["seed"], True)) in fixed]
         det = rate([bool(r["flagged"]) for r in own])
+        own_c = [r for r in retest if r["condition"] == c and r["investigator"] == r["attack_target"] and not r["violating"]]
+        fp_pairs = [(bool(r["flagged"]), fixed[k]) for r in own_c
+                    if (k := (FIXED_ARM[c], r["investigator"], r["author"], r["seed"], False)) in fixed]
         res["primary"][c] = {"own_target_detection": det, "fixed_retraction_same_boards": rate([y for _, y in pairs]),
+                             "own_target_fp": rate([x for x, _ in fp_pairs]), "fixed_fp_same_twins": rate([y for _, y in fp_pairs]),
                              "vs_fixed": mcnemar(pairs), "reading": reading(det["pct"]) if c == "effects" else None}
         sel = [r for r in attack if r["condition"] == c and r["selected"] is not None]
         for tag in ("forged_record", "reviewer_directed"):
