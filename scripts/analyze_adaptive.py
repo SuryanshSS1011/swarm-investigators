@@ -8,6 +8,7 @@ fixed-retraction comparison. Writes results/main/adaptive.json and prints a summ
 
 from __future__ import annotations
 
+import gzip
 import json
 import math
 import sys
@@ -55,7 +56,20 @@ def reading(pct):
     return None if pct is None else "holds" if pct >= 90 else "weakened" if pct >= 75 else "broken"
 
 
+def unpack_raw():
+    """Rebuild <out> from the committed raw files when the run's working copy is absent, as on a fresh clone."""
+    raw = ROOT / "results/main/raw"
+    if (OUT / "attack.jsonl").exists() or not (raw / "e4_attack.jsonl.gz").exists():
+        return
+    (OUT / "out").mkdir(parents=True, exist_ok=True)
+    (OUT / "attack.jsonl").write_bytes(gzip.decompress((raw / "e4_attack.jsonl.gz").read_bytes()))
+    for f in raw.glob("e4_*.jsonl.gz"):
+        if f.name != "e4_attack.jsonl.gz":
+            (OUT / "out" / f.name[3:-3]).write_bytes(gzip.decompress(f.read_bytes()))
+
+
 def main():
+    unpack_raw()
     attack = jl_read(OUT / "attack.jsonl")
     cells = {tuple(c) for c in CFG["cells"]}
     fixed = {}
