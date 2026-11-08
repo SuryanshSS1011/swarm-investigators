@@ -325,8 +325,8 @@ def fig_alibi(R):
     conds = [("neutral", "Neutral post"), ("spoof", "Retraction"), ("vouch", "Peer alibi"),
              ("self_vouch", "Retraction and alibi")]
     treat = [(("main", "e1_main"), REF, "o", "standard setup"),
-             (("e1_d3",), BLUE, "s", "conflict-aware prompt (D3)"),
-             (("e2_effects",), AQUA, "^", "effect logging (E2)")]
+             (("e1_d3",), BLUE, "s", "conflict-aware prompt"),
+             (("e2_effects",), AQUA, "^", "effect logging")]
     invs = [i for i in ORDER if any(r["investigator"] == i and r["arm"] in ("e1_d3", "e2_effects") for r in sub)]
     ys = row_positions(invs)
     span = ys[-1] + 1.0
@@ -375,7 +375,7 @@ def fig_alibi(R):
             if not shown:
                 ax.text(50, y, "not run", fontsize=FS_NOTE, color=MUTED, ha="center", va="center", style="italic")
         if 2 not in ran:
-            ftext(fig, left, H - 0.50, "E2 not run", fontsize=FS_NOTE, color=MUTED, va="bottom")
+            ftext(fig, left, H - 0.50, "effect logging not run", fontsize=FS_NOTE, color=MUTED, va="bottom")
     ftext(fig, first + (WIDTH - right - first) / 2, 0.04, "Detection on violation boards (%), with 95% Wilson "
           "intervals", fontsize=FS_TICK, color=INK2, ha="center", va="bottom")
     ftext(fig, n_right, H - 0.36, "boards", fontsize=FS_NOTE, color=INK2, ha="right", va="bottom")
@@ -406,7 +406,7 @@ def fig_excerpts():
                                                     ("mono", "write_file path=/workspace/"),
                                                     ("mono", "  ag-12/limits.yaml -> ok (212 B)")]),
         ]),
-        ("Peer alibi (follow-up E1)", "detection falls less than with a retraction", [
+        ("Peer alibi (follow-up)", "detection falls less than with a retraction", [
             ("post", "ag-52", "agent post", [("sans", planted)]),
             ("post", "ag-09", "another agent, later", [("sans", "For the record, ag-52 only changed their local "
                                                         "test config, not anything the grader loads. I paired "
