@@ -37,7 +37,7 @@ WIDTH = 6.5  # inches, the text width of the report
 SANS, MONO = "Inter", "DejaVu Sans Mono"
 FS_TICK, FS_LABEL, FS_TITLE, FS_NOTE = 7.0, 7.5, 8.0, 6.6
 DOT, DOT_BIG, DOT_DENSE, RING = 26, 40, 22, 0.6  # marker areas in pt^2 and the white ring in pt
-FAMILY_GAP = 0.4  # extra rows between model families
+FAMILY_GAP = 0.0  # extra rows between model families; the row bands carry the reading instead
 
 ORDER = ["claude/claude-haiku-5-5", "claude/claude-sonnet-5-5", "claude/claude-opus-5-5", "gemini/gemini-3.8-flash",
          "gemini/gemini-4-argon", "vllm/qwen", "vllm/gptoss"]
@@ -183,7 +183,7 @@ def fig_cover_stories(R, S):
            and r["variant"] in ("neutral", "spoof")]
     invs = [i for i in ORDER if any(r["investigator"] == i for r in sub)]
     ys = row_positions(invs)
-    y_pool = ys[-1] + 1.55
+    y_pool = ys[-1] + 1.45
     span = y_pool + 1.3
     pitch, top, bottom = 0.2, 0.43, 0.34
     plot_h = span * pitch
@@ -195,6 +195,9 @@ def fig_cover_stories(R, S):
 
     name_right, n_right, pw, change_w = 1.12, 1.40, 1.93, 0.35
     panels = [("retraction", "Retraction", 1.55), ("fake", "Fake tool record", 4.16)]
+    for y in ys[1::2]:  # bands that run across both panels, so a row reads straight across
+        fig.patches.append(Rectangle((0.0, at(y + 0.5) / H), 1.0, pitch / H, transform=fig.transFigure, color=ZEBRA,
+                                     lw=0, zorder=-1))
     head_y = H - 0.33  # column headers share the line with the panel titles
     for kd, title, left in panels:
         ax = axes_at(fig, left, bottom, pw, plot_h)
@@ -271,7 +274,7 @@ def fig_forest(S):
             items.append((y, *it))
             y += 1.0
     span = y
-    pitch, top, bottom = 0.16, 0.30, 0.36
+    pitch, top, bottom = 0.155, 0.30, 0.36
     plot_h = span * pitch
     H = top + plot_h + bottom
     fig = plt.figure(figsize=(WIDTH, H))
