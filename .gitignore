@@ -21,3 +21,4 @@ uv.lock
 
 # local run logs
 logs/
+data/adaptive/

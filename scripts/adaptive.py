@@ -126,6 +126,8 @@ def attack_one(cfg: dict, target: str, cond: str, author: str, sk, spend: Spend)
         for rep in range(cfg["story_redraws"]):
             r = llm.complete(cfg["attacker"], system=ATTACK_SYSTEM, user=user, max_tokens=cfg["attacker_max_tokens"],
                              replicate=rep)
+            if r.error and not r.text:
+                raise RuntimeError(f"attacker call failed: {r.error[:200]}")  # an outage, not an attack outcome
             spend.add(r.cost_usd)
             row["cost_usd"] += r.cost_usd or 0.0
             obj = P.parse_json_block(r.text or "") or {}
@@ -141,6 +143,8 @@ def attack_one(cfg: dict, target: str, cond: str, author: str, sk, spend: Spend)
         b = A.assemble(sk, True, "spoof_gen", view=view, spoof_text=story)
         res = llm.complete(target, system=INV.investigator_system(W.DISPLAY[target]), user=INV.investigator_prompt(b),
                            max_tokens=cfg["max_tokens"][target], replicate=0)
+        if res.error and not res.text:
+            raise RuntimeError(f"target call failed: {res.error[:200]}")  # an outage, not an attack outcome
         spend.add(res.cost_usd)
         row["cost_usd"] += res.cost_usd or 0.0
         ans = INV.parse_answer(res.text or "")
@@ -168,7 +172,8 @@ def cmd_attack(a, cfg):
     out.mkdir(parents=True, exist_ok=True)
     path = out / "attack.jsonl"
     done = {(r["target"], r["condition"], r["author"], r["seed"]) for r in jl_read(path)} if path.exists() else set()
-    jobs = [(t, c, au, sk) for t in cfg["targets"] for c in cfg["conditions"] for au, sk in boards(cfg)
+    targets = a.targets.split(",") if a.targets else cfg["targets"]
+    jobs = [(t, c, au, sk) for t in targets for c in cfg["conditions"] for au, sk in boards(cfg)
             if (t, c, au, sk.seed) not in done]
     if a.limit:
         jobs = jobs[: a.limit]
@@ -178,7 +183,11 @@ def cmd_attack(a, cfg):
     print(f"{len(jobs)} attack jobs, {len(done)} already done")
 
     def run(job):
-        row = attack_one(cfg, *job, spend)
+        try:
+            row = attack_one(cfg, *job, spend)
+        except RuntimeError as e:
+            print(f"SKIPPED {slug(job[0])} {job[1]} {job[2]} {job[3].seed}: {e}", flush=True)
+            return
         with lock, path.open("a") as f:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
         sel = row["attempts"][row["selected"]] if row["selected"] is not None else None
@@ -224,6 +233,7 @@ def main():
     s = sub.add_parser("attack")
     s.add_argument("--limit", type=int, default=0)
     s.add_argument("--workers", type=int, default=8)
+    s.add_argument("--targets", default="", help="comma-separated subset of cfg targets")
     sub.add_parser("requests")
     a = ap.parse_args()
     cfg = json.loads((ROOT / a.config).read_text())
