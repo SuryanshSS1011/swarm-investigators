@@ -5,7 +5,6 @@
 ![audits](https://img.shields.io/badge/audits-22%2C880%20pre--registered-2a78d6)
 ![investigators](https://img.shields.io/badge/investigators-7%20LLMs%2C%204%20families-52514e)
 ![boards](https://img.shields.io/badge/boards-40%20with%20benign%20twins-1baf7a)
-![api keys](https://img.shields.io/badge/API%20keys%20to%20explore-0-eb6834)
 
 This repository holds the boards, pre-registrations, raw model outputs and analysis behind *The Last Word Wins:
 Retractions and Peer Alibis in Swarm Logs Mislead LLM Incident Investigators*. It is an entry in Apart Research's
