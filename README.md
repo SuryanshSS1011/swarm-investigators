@@ -16,7 +16,7 @@ their own logs changes LLM investigators' verdicts.
 3. `docs/explore_alibi.md` (E1), `docs/explore_logging.md` (E2) and `docs/explore_reasoning.md` (E3) are
    exploratory follow-ups, each committed before its first call.
 4. `docs/prereg_replication.md` (R) is a pre-registered replication with model-written retractions and GPT-5.6 Sol
-   as an investigator, committed before any of its calls.
+   as an investigator, committed before any of its calls. GPT-5.6 Sol did not run, so R2 is reported as not run.
 5. `results/main/summary.json` holds every pre-registered test of the main study, `results/main/secondary.json` the
    secondary and exploratory quantities (scored leniently, split by investigator group, and the E1, E2 and probe
    results), `results/main/replication.json` the replication, `results/main/reasoning.json` E3, and

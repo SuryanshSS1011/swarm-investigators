@@ -59,3 +59,9 @@ main study in `docs/prereg_main.md`, and none of these results will be pooled in
    will also be reported.
 3. GPT-5.6 Sol spending is capped at $40. Requests run in this order: main arm, E2, R1, header, alibis, D3. If the
    cap stops the run, the arms that did not run will be reported as not run.
+
+## Amendment (November 7, about 19:15 ET)
+
+GPT-5.6 Sol did not run. We could not get access to the OpenAI API within the hackathon, so no GPT-5.6 Sol call was
+made in R1 or R2. R1 ran as registered with the other four investigators. R2 is reported as not run, as item 3 of
+the analysis plan provides for arms that do not run. No other part of R changes.
