@@ -250,7 +250,7 @@ def fig_cover_stories(R, S):
 # Figure 2 ------------------------------------------------------------------------------------------------------------
 
 def fig_forest(S):
-    """Figure 2: every pre-registered paired contrast, with its 95% interval."""
+    """Figure 2: every pre-registered paired contrast, with its 95% interval, named rather than numbered."""
     P = S["primary"]
     groups = [
         [("H1", "Cover story (retraction or fake record)", P["H1_spoof"]["detection"]["pooled"], True)],
@@ -279,7 +279,7 @@ def fig_forest(S):
     H = top + plot_h + bottom
     fig = plt.figure(figsize=(WIDTH, H))
     at = Rows(bottom, plot_h, span)
-    left, width = 2.55, 2.45
+    left, width = 2.2, 2.8
     ax = axes_at(fig, left, bottom, width, plot_h)
     ax.set_xlim(-25, 10)
     ticks = list(range(-25, 11, 5))
@@ -304,8 +304,7 @@ def fig_forest(S):
         ax.plot([lo, hi], [y, y], color=color, lw=1.2, solid_capstyle="butt", zorder=2)
         mark(ax, d, y, color, s=DOT_BIG if lead else DOT, filled=detection)
         yy = at(y)
-        ftext(fig, 0.05, yy, hid, fontweight="bold", va="center")
-        ftext(fig, 0.42, yy, lab, va="center")
+        ftext(fig, 0.05, yy, lab, va="center", fontweight="bold" if lead else "normal")
         ftext(fig, col_d, yy, signed(d, 1), fontsize=FS_TICK, fontweight="bold" if lead else "normal", ha="right",
               va="center")
         ftext(fig, col_lo, yy, minus(half_up(lo, 1)), fontsize=FS_TICK, color=INK2, ha="right", va="center")
