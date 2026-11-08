@@ -102,7 +102,7 @@ def main():
             }
 
     for c in CFG["conditions"]:
-        for inv in CFG["retest_investigators"]:
+        for inv in CFG["retest_investigators"] + CFG.get("retest_investigators_openweight", []):
             for t in CFG["targets"]:
                 rows = [r for r in retest if r["condition"] == c and r["investigator"] == inv and r["attack_target"] == t]
                 if not rows:
