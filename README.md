@@ -37,13 +37,18 @@ bash scripts/build_all.sh                          # score, analyze, draw figure
 ```
 
 To rebuild the results without any model calls, unzip the committed outputs first. The audit files go to
-`data/main/out/`, and `scored`, `probes` and `author_log` go to `data/main/`. The replication also reads
-`data/main/gen_retractions.jsonl`, which is committed.
+`data/main/out/`, except E3's stopped 16,000-token run, which goes to `data/main/out_stopped/` so that it is never
+scored. `scored`, `probes` and `author_log` go to `data/main/`. The replication also reads
+`data/main/gen_retractions.jsonl`, which is committed, and E4 unpacks its own files from `results/main/raw/e4_*`.
 
 ```bash
-mkdir -p data/main/out && for f in results/main/raw/{claude,gemini,vllm}_*.jsonl.gz; do gunzip -c "$f" > data/main/out/$(basename "${f%.gz}"); done
+mkdir -p data/main/out data/main/out_stopped
+for f in results/main/raw/{claude,gemini,vllm}_*.jsonl.gz; do
+  case "$f" in *_stopped_*) d=data/main/out_stopped ;; *) d=data/main/out ;; esac
+  gunzip -c "$f" > "$d/$(basename "${f%.gz}")"
+done
 for f in scored probes author_log; do gunzip -c results/main/raw/$f.jsonl.gz > data/main/$f.jsonl; done
-python3 scripts/analyze.py && python3 scripts/analyze_secondary.py && python3 scripts/figures.py
+bash scripts/build_all.sh
 ```
 
 The board generator is in `swarm/world.py`, `swarm/skeleton.py`, `swarm/author.py` and `swarm/assemble.py`. The
