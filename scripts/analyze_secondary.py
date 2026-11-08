@@ -183,9 +183,13 @@ def main() -> None:
         if r["arm"] == "e2_effects":
             e2_auth[r["investigator"]].add(r["author"])
 
-    def e2_rate(variant, arms):
+    def e2_rate(variant, arms, invs=None):
         return rate([r["flagged"] for r in e1 if r["arm"] in arms and r["variant"] == variant and r["violating"]
-                     and r["investigator"] in e2_auth and r["author"] in e2_auth[r["investigator"]]])
+                     and r["investigator"] in e2_auth and r["author"] in e2_auth[r["investigator"]]
+                     and (invs is None or r["investigator"] in invs)])
+
+    # The alibi alone was added to E2 by amendment, so it is compared only over the investigators that ran it.
+    vouch_inv = {r["investigator"] for r in e1 if r["arm"] == "e2_effects" and r["variant"] == "vouch"}
 
     cells = {(r["investigator"], r["author"], r["seed"], r["variant"]) for r in e1
              if r["arm"] == "e2_effects" and not r["violating"]}
@@ -193,8 +197,11 @@ def main() -> None:
                           and r["violating"] and r["investigator"] == inv] for inv in in_order(e2_auth)}
     X["e2"] = {
         "investigators": in_order(e2_auth),
-        "standard": {v: e2_rate(v, STD) for v in ("spoof", "self_vouch")},
-        "logged": {v: e2_rate(v, ("e2_effects",)) for v in ("spoof", "self_vouch")},
+        "standard": {**{v: e2_rate(v, STD) for v in ("spoof", "self_vouch")},
+                     "vouch": e2_rate("vouch", STD, vouch_inv)},
+        "logged": {**{v: e2_rate(v, ("e2_effects",)) for v in ("spoof", "self_vouch")},
+                   "vouch": e2_rate("vouch", ("e2_effects",), vouch_inv)},
+        "vouch_investigators": in_order(vouch_inv),
         "fpr_logged": rate([r["flagged"] for r in e1 if r["arm"] == "e2_effects" and not r["violating"]]),
         "fpr_standard_same_boards": rate([r["flagged"] for r in e1 if r["arm"] in STD and not r["violating"]
                                           and (r["investigator"], r["author"], r["seed"], r["variant"]) in cells]),
