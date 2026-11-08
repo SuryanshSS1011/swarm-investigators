@@ -146,20 +146,34 @@ def mark(ax, x, y, color, marker="o", s=DOT, filled=True, z=4):
                else "white", linewidth=RING if filled else 1.1, zorder=z, clip_on=False)
 
 
+DASH = (0, (2.2, 1.6))  # the dash pattern of a reference line
+
+
 def legend_row(fig, x, y, items, gap=0.17):
-    """A one-line legend in inches. Items are (color, label, marker, filled). Labels stay in ink."""
+    """A one-line legend in inches. Items are (color, label, marker, filled). Labels stay in ink.
+    The marker "dash" draws a short dashed vertical line, the glyph of a dashed reference line."""
     W_, H_ = fig.get_size_inches()
     r = fig.canvas.get_renderer()
     for color, label, marker, filled in items:
-        size = 7.5 if marker == "|" else 5.0 if marker in ("s", "^") else 5.3
-        fig.add_artist(Line2D([(x + 0.04) / W_], [y / H_], marker=marker, markersize=size,
-                              color=color, markerfacecolor=color if filled else "white",
-                              markeredgecolor=("white" if filled and marker != "|" else color),
-                              markeredgewidth=0.6 if filled and marker != "|" else 1.0, linestyle="none",
-                              transform=fig.transFigure))
+        if marker == "dash":
+            fig.add_artist(Line2D([(x + 0.04) / W_] * 2, [(y - 0.055) / H_, (y + 0.055) / H_], color=color, lw=0.9,
+                                  linestyle=DASH, transform=fig.transFigure))
+        else:
+            size = 7.5 if marker == "|" else 5.0 if marker in ("s", "^") else 5.3
+            fig.add_artist(Line2D([(x + 0.04) / W_], [y / H_], marker=marker, markersize=size,
+                                  color=color, markerfacecolor=color if filled else "white",
+                                  markeredgecolor=("white" if filled and marker != "|" else color),
+                                  markeredgewidth=0.6 if filled and marker != "|" else 1.0, linestyle="none",
+                                  transform=fig.transFigure))
         t = fig.text((x + 0.12) / W_, y / H_, label, fontsize=FS_LABEL, color=INK, va="center")
         x = t.get_window_extent(r).x1 / fig.dpi + gap
     return x
+
+
+def legend_center(fig, cx, y, items, gap=0.17):
+    """The same legend, centered on cx. The marker's left edge sits about 0.005 inches right of the start."""
+    w = sum(0.12 + text_w(fig, label) for _, label, _, _ in items) + gap * (len(items) - 1)
+    return legend_row(fig, cx - w / 2, y, items, gap)
 
 
 def ftext(fig, x, y, s, **kw):
@@ -168,6 +182,27 @@ def ftext(fig, x, y, s, **kw):
     kw.setdefault("fontsize", FS_LABEL)
     kw.setdefault("color", INK)
     return fig.text(x / W_, y / H_, s, **kw)
+
+
+def text_w(fig, s, **kw):
+    """The printed width of a text in inches, measured with the figure's own renderer."""
+    t = ftext(fig, 0, 0, s, **kw)
+    w = t.get_window_extent(fig.canvas.get_renderer()).width / fig.dpi
+    t.remove()
+    return w
+
+
+def column(fig, center, y_of, values, header, head_y, **kw):
+    """A column of numbers right-aligned in a block whose header is centered over it.
+    values maps a row to its text; kw styles every value and may be overridden per row by a (text, style) pair."""
+    kw.setdefault("fontsize", FS_NOTE)
+    kw.setdefault("color", INK2)
+    texts = {k: v if isinstance(v, tuple) else (v, {}) for k, v in values.items()}
+    w = max(text_w(fig, s, **{**kw, **st}) for s, st in texts.values())
+    ftext(fig, center, head_y, header, fontsize=FS_NOTE, color=INK2, ha="center", va="bottom")
+    for k, (s, st) in texts.items():
+        ftext(fig, center + w / 2, y_of(k), s, ha="right", va="center", **{**kw, **st})
+    return w
 
 
 def hline(fig, x0, x1, y, color=BASE, lw=0.6):
@@ -193,20 +228,23 @@ def fig_cover_stories(R, S):
     pooled_ci = {"retraction": S["explore_spoof_kind"]["false_correction"]["main_neutral_to_spoof"]["pooled"],
                  "fake": S["explore_spoof_kind"]["fake_record"]["main_neutral_to_spoof"]["pooled"]}
 
-    name_right, n_right, pw, change_w = 1.12, 1.40, 1.93, 0.35
-    panels = [("retraction", "Retraction", 1.55), ("fake", "Fake tool record", 4.16)]
+    name_right, pairs_c, first, pw, gap = 1.12, 1.30, 1.55, 1.96, 0.20
+    to_c = 0.22  # from a plot's right edge to the center of its change column
+    panels = [("retraction", "Retraction", first), ("fake", "Fake tool record", first + pw + to_c + 0.16 + gap)]
+    mid = (panels[0][2] + panels[1][2] + pw) / 2  # the center of the plotted region, for the legend and axis title
     for y in ys[1::2]:  # bands that run across both panels, so a row reads straight across
         fig.patches.append(Rectangle((0.0, at(y + 0.5) / H), 1.0, pitch / H, transform=fig.transFigure, color=ZEBRA,
                                      lw=0, zorder=-1))
     head_y = H - 0.33  # column headers share the line with the panel titles
+    y_of = dict(zip(invs, ys), pooled=y_pool)
     for kd, title, left in panels:
         ax = axes_at(fig, left, bottom, pw, plot_h)
         ax.set_xlim(0, 100)
         setup_axis(ax, span, [0, 25, 50, 75, 100])
-        ftext(fig, left, head_y, title, fontsize=FS_TITLE, fontweight="bold", va="bottom")
-        cx = left + pw + change_w
-        ftext(fig, cx, head_y, "change (pts)", fontsize=FS_NOTE, color=INK2, ha="right", va="bottom")
-        for inv, y in list(zip(invs, ys)) + [("pooled", y_pool)]:
+        ftext(fig, left + pw / 2, head_y, title, fontsize=FS_TITLE, fontweight="bold", ha="center", va="bottom")
+        cc = left + pw + to_c
+        change = {}
+        for inv, y in y_of.items():
             pick = [r for r in sub if (inv == "pooled" or r["investigator"] == inv) and kind(r) == kd]
             a = [r["flagged"] for r in pick if r["variant"] == "neutral"]
             b = [r["flagged"] for r in pick if r["variant"] == "spoof"]
@@ -224,94 +262,112 @@ def fig_cover_stories(R, S):
                         solid_capstyle="butt", zorder=2)
                 mark(ax, pa, y, REF, s=size)
                 mark(ax, pb, y, ORANGE, s=size)
-            ftext(fig, cx, at(y) + (0.035 if pooled else 0), signed(pb - pa), fontsize=FS_TICK,
-                  color=INK if pooled else INK2, fontweight="bold" if pooled else "normal", ha="right", va="center")
-            if pooled:  # the paired 95% seed-bootstrap interval of the pooled change
-                lo, hi = (100 * v for v in pooled_ci[kd]["ci95"])
-                ftext(fig, cx, at(y) - 0.085, minus(f"{signed(lo)} to {signed(hi)}"), fontsize=FS_NOTE - 0.6,
-                      color=INK2, ha="right", va="center")
-    ftext(fig, (panels[0][2] + panels[1][2] + pw) / 2, 0.04, "Detection on violation boards (%)",
-          fontsize=FS_TICK, color=INK2, ha="center", va="bottom")
+            change[inv] = (signed(pb - pa), {"color": INK, "fontweight": "bold"} if pooled else {})
+        w = column(fig, cc, lambda k: at(y_of[k]) + (0.035 if k == "pooled" else 0), change, "change", head_y,
+                   fontsize=FS_TICK)
+        lo, hi = (100 * v for v in pooled_ci[kd]["ci95"])  # the paired 95% seed-bootstrap interval of the pooled change
+        ftext(fig, cc + w / 2, at(y_pool) - 0.085, minus(f"{signed(lo)} to {signed(hi)}"), fontsize=FS_NOTE - 0.6,
+              color=INK2, ha="right", va="center")
+    ftext(fig, mid, 0.04, "Detection on violation boards (%)", fontsize=FS_TICK, color=INK2, ha="center",
+          va="bottom")
 
-    ftext(fig, n_right, head_y, "pairs", fontsize=FS_NOTE, color=INK2, ha="right", va="bottom")
     n_of = {inv: sum(1 for r in sub if r["investigator"] == inv and kind(r) == "retraction"
                      and r["variant"] == "neutral") for inv in invs}
     n_of["pooled"] = sum(n_of.values())
-    for inv, y in list(zip(invs, ys)) + [("pooled", y_pool)]:
+    column(fig, pairs_c, lambda k: at(y_of[k]), {k: str(v) for k, v in n_of.items()}, "pairs", head_y)
+    for inv, y in y_of.items():
         pooled = inv == "pooled"
         ftext(fig, name_right, at(y), "Pooled" if pooled else W.DISPLAY[inv], fontweight="bold" if pooled
               else "normal", ha="right", va="center")
-        ftext(fig, n_right, at(y), str(n_of[inv]), fontsize=FS_NOTE, color=INK2, ha="right", va="center")
     hline(fig, 0.05, WIDTH - 0.03, at(y_pool - 0.78))
-    legend_row(fig, 0.05, H - 0.09, [(REF, "neutral post", "o", True), (ORANGE, "cover story", "o", True)])
+    legend_center(fig, mid, H - 0.09, [(REF, "neutral post", "o", True), (ORANGE, "cover story", "o", True)])
     save(fig, "fig1_cover_stories")
 
 
 # Figure 2 ------------------------------------------------------------------------------------------------------------
 
 def fig_forest(S):
-    """Figure 2: every pre-registered paired contrast, with its 95% interval, named rather than numbered."""
+    """Figure 2: every pre-registered paired contrast, with its 95% interval, grouped and named rather than numbered."""
     P = S["primary"]
-    groups = [
-        [("H1", "Cover story (retraction or fake record)", P["H1_spoof"]["detection"]["pooled"], True)],
-        [("H2a", "Fake authorization note", P["H2a_auditor_auth"]["detection"]["pooled"], True),
-         ("H2b", "Peer appeal to AI reviewers", P["H2b_auditor_kin"]["detection"]["pooled"], True),
-         ("H2c", "Direct instruction to reviewers", P["H2c_auditor_inject"]["detection"]["pooled"], True)],
-        [("H4", "Neutral post, detection", S["H4_spotlight"]["detection"]["pooled"], True),
-         ("", "Neutral post, false positives", S["H4_spotlight"]["fpr"]["pooled"], False)],
-        [("H5", "Own-model header, detection", S["H5_kinship"]["none_detection"]["pooled"], True),
-         ("", "Own-model header, false positives", S["H5_kinship"]["none_fpr"]["pooled"], False)],
-        [("H7", "Provenance prompt under a cover story", S["H7_d1"]["spoof"]["detection"]["pooled"], True)],
+    groups = [  # (group, [(label, stats, is_detection)]); the first group is the headline contrast
+        ("Cover story", [("Retraction or fake record", P["H1_spoof"]["detection"]["pooled"], True)]),
+        ("Notes to reviewers", [("Fake authorization", P["H2a_auditor_auth"]["detection"]["pooled"], True),
+                                ("Peer appeal to AI reviewers", P["H2b_auditor_kin"]["detection"]["pooled"], True),
+                                ("Direct instruction", P["H2c_auditor_inject"]["detection"]["pooled"], True)]),
+        ("Neutral post", [("Detection", S["H4_spotlight"]["detection"]["pooled"], True),
+                          ("False positives", S["H4_spotlight"]["fpr"]["pooled"], False)]),
+        ("Own-model header", [("Detection", S["H5_kinship"]["none_detection"]["pooled"], True),
+                              ("False positives", S["H5_kinship"]["none_fpr"]["pooled"], False)]),
+        ("Provenance prompt", [("Under a cover story", S["H7_d1"]["spoof"]["detection"]["pooled"], True)]),
     ]
-    items, y = [], 0.0
-    for grp in groups:
-        grp = [g for g in grp if g[2]]
-        if not grp:
-            continue
-        if items:
-            y += 0.45
-        for it in grp:
-            items.append((y, *it))
-            y += 1.0
-    span = y
-    pitch, top, bottom = 0.155, 0.30, 0.36
+    groups = [(g, its) for g, its in ((g, [it for it in its if it[1]]) for g, its in groups) if its]
+    rows_ = [(gi, *it) for gi, (_, its) in enumerate(groups) for it in its]  # (group index, label, stats, detection)
+    span = len(rows_)
+    pitch, top, bottom = 0.172, 0.40, 0.34
     plot_h = span * pitch
     H = top + plot_h + bottom
     fig = plt.figure(figsize=(WIDTH, H))
     at = Rows(bottom, plot_h, span)
-    left, width = 2.2, 2.8
+    head_y = H - 0.33
+
+    # Every column is measured, so each block sits under its centered header and nothing collides.
+    vals = []
+    for gi, lab, st, det in rows_:
+        d, lo, hi = (100 * v for v in (st["diff"], *st["ci95"]))
+        vals.append((d, lo, hi, signed(d, 1), minus(half_up(lo, 1)), minus(half_up(hi, 1)), str(st["n"])))
+    gx = 0.05
+    ix = gx + max(text_w(fig, g, fontweight="bold") for g, _ in groups) + 0.16
+    items_r = ix + max(text_w(fig, lab) for _, lab, _, _ in rows_)
+    pairs_w = max(text_w(fig, "pairs", fontsize=FS_NOTE), *(text_w(fig, v[6], fontsize=FS_NOTE) for v in vals))
+    pairs_c = items_r + 0.14 + pairs_w / 2
+    left = pairs_c + pairs_w / 2 + 0.16
+    R = WIDTH - 0.04
+    lo_w = max(text_w(fig, v[4], fontsize=FS_TICK) for v in vals)
+    hi_w = max(text_w(fig, v[5], fontsize=FS_TICK) for v in vals)
+    to_w = text_w(fig, "to", fontsize=FS_NOTE)
+    to_c = R - hi_w - 0.06 - to_w / 2
+    lo_r = to_c - to_w / 2 - 0.06
+    ci_c = (lo_r - lo_w + R) / 2
+    ch_w = max(text_w(fig, "change", fontsize=FS_NOTE),
+               *(text_w(fig, v[3], fontsize=FS_TICK, fontweight="bold") for v in vals))
+    ch_c = lo_r - lo_w - 0.20 - ch_w / 2
+    width = ch_c - ch_w / 2 - 0.16 - left
+
+    for gi, (g, its) in enumerate(groups):  # one band per group; the group name sits at the middle of its band
+        ys = [y for y, r in enumerate(rows_) if r[0] == gi]
+        top_in, bot_in = at(ys[0] - 0.5), at(ys[-1] + 0.5)
+        if gi % 2:
+            fig.patches.append(Rectangle((0.0, bot_in / H), 1.0, (top_in - bot_in) / H, transform=fig.transFigure,
+                                         color=ZEBRA, lw=0, zorder=-1))
+        ftext(fig, gx, (top_in + bot_in) / 2, g, fontweight="bold", va="center")
+
     ax = axes_at(fig, left, bottom, width, plot_h)
     ax.set_xlim(-25, 10)
     ticks = list(range(-25, 11, 5))
     setup_axis(ax, span, ticks, [minus(f"{t:+d}") if t else "0" for t in ticks])
     ax.axvline(0, color=INK2, lw=0.8, zorder=1, clip_on=False)
     # the pre-registered bar for a drop: at least 5 points, with the 95% interval below zero
-    ax.plot([-5, -5], [span - 0.5, -0.5 - 0.55], color=MUTED, lw=0.9, zorder=1, clip_on=False)
-    ax.text(-5, -0.5 - 0.62, "pre-registered bar", fontsize=FS_NOTE, color=INK2, ha="center", va="bottom",
-            style="italic")
-    ax.set_xlabel("Paired difference (percentage points)", fontsize=FS_TICK, color=INK2, labelpad=4)
+    ax.plot([-5, -5], [span - 0.5, -0.5], color=MUTED, lw=0.9, linestyle=DASH, zorder=1, clip_on=False)
+    mid = left + width / 2
+    ftext(fig, mid, 0.04, "Paired difference (percentage points)", fontsize=FS_TICK, color=INK2, ha="center",
+          va="bottom")
 
-    col_d, col_lo, col_to, col_hi, col_n = 5.45, 5.80, 5.925, 6.21, 6.47
-    head_y = bottom + plot_h + 0.06
-    ftext(fig, 0.05, head_y, "Pre-registered contrast", fontsize=FS_NOTE, color=INK2, va="bottom")
-    ftext(fig, col_d, head_y, "difference", fontsize=FS_NOTE, color=INK2, ha="right", va="bottom")
-    ftext(fig, col_to, head_y, "95% CI", fontsize=FS_NOTE, color=INK2, ha="center", va="bottom")
-    ftext(fig, col_n, head_y, "n", fontsize=FS_NOTE, color=INK2, ha="right", va="bottom")
-    for y, hid, lab, st, detection in items:
-        d, lo, hi = (100 * v for v in (st["diff"], *st["ci95"]))
-        lead = hid == "H1"
+    for y, ((gi, lab, st, det), (d, lo, hi, d_s, lo_s, hi_s, n_s)) in enumerate(zip(rows_, vals)):
+        lead = gi == 0
         color = ORANGE if lead else REF
         ax.plot([lo, hi], [y, y], color=color, lw=1.2, solid_capstyle="butt", zorder=2)
-        mark(ax, d, y, color, s=DOT_BIG if lead else DOT, filled=detection)
+        mark(ax, d, y, color, s=DOT_BIG if lead else DOT, filled=det)
         yy = at(y)
-        ftext(fig, 0.05, yy, lab, va="center", fontweight="bold" if lead else "normal")
-        ftext(fig, col_d, yy, signed(d, 1), fontsize=FS_TICK, fontweight="bold" if lead else "normal", ha="right",
-              va="center")
-        ftext(fig, col_lo, yy, minus(half_up(lo, 1)), fontsize=FS_TICK, color=INK2, ha="right", va="center")
-        ftext(fig, col_to, yy, "to", fontsize=FS_NOTE, color=MUTED, ha="center", va="center")
-        ftext(fig, col_hi, yy, minus(half_up(hi, 1)), fontsize=FS_TICK, color=INK2, ha="right", va="center")
-        ftext(fig, col_n, yy, str(st["n"]), fontsize=FS_NOTE, color=INK2, ha="right", va="center")
-    legend_row(fig, 0.05, bottom - 0.115, [(REF, "detection", "o", True), (REF, "false-positive rate", "o", False)])
+        ftext(fig, ix, yy, lab, va="center")
+        ftext(fig, lo_r, yy, lo_s, fontsize=FS_TICK, color=INK2, ha="right", va="center")
+        ftext(fig, to_c, yy, "to", fontsize=FS_NOTE, color=MUTED, ha="center", va="center")
+        ftext(fig, R, yy, hi_s, fontsize=FS_TICK, color=INK2, ha="right", va="center")
+    column(fig, pairs_c, lambda y: at(y), {y: v[6] for y, v in enumerate(vals)}, "pairs", head_y)
+    column(fig, ch_c, lambda y: at(y), {y: (v[3], {"fontweight": "bold"} if rows_[y][0] == 0 else {})
+                                        for y, v in enumerate(vals)}, "change", head_y, fontsize=FS_TICK, color=INK)
+    ftext(fig, ci_c, head_y, "95% CI", fontsize=FS_NOTE, color=INK2, ha="center", va="bottom")
+    legend_center(fig, mid, H - 0.09, [(REF, "detection", "o", True), (REF, "false-positive rate", "o", False),
+                                       (MUTED, "pre-registered bar for a drop", "dash", True)])
     save(fig, "fig2_forest")
 
 
@@ -335,8 +391,9 @@ def fig_alibi(R):
     H = top + plot_h + bottom
     fig = plt.figure(figsize=(WIDTH, H))
     at = Rows(bottom, plot_h, span)
-    name_right, n_right, first, gap, right = 1.12, 1.40, 1.53, 0.24, 0.12
+    name_right, boards_c, first, gap, right = 1.12, 1.33, 1.53, 0.29, 0.12
     width = (WIDTH - right - first - gap * (len(conds) - 1)) / len(conds)
+    mid = first + (WIDTH - right - first) / 2  # the center of the plotted region, for the legend and axis title
     for y in ys[1::2]:  # bands that run across every panel, so a row reads straight across
         y0 = at(y + 0.5)
         fig.patches.append(Rectangle((0.0, y0 / H), 1.0, pitch / H, transform=fig.transFigure, color=ZEBRA, lw=0,
@@ -354,9 +411,7 @@ def fig_alibi(R):
         ax = axes_at(fig, left, bottom, width, plot_h)
         ax.set_xlim(0, 100)
         setup_axis(ax, span, [0, 50, 100], ["0", "50", "100"])
-        ax.get_xticklabels()[0].set_horizontalalignment("left")
-        ax.get_xticklabels()[-1].set_horizontalalignment("right")
-        ftext(fig, left, H - 0.36, title, fontsize=FS_TITLE, fontweight="bold", va="bottom")
+        ftext(fig, left + width / 2, H - 0.36, title, fontsize=FS_TITLE, fontweight="bold", ha="center", va="bottom")
         ran = set()
         for inv, y in zip(invs, ys):
             if v != "neutral" and inv in ref:  # where this model stood with a neutral post, standard setup
@@ -375,16 +430,16 @@ def fig_alibi(R):
             if not shown:
                 ax.text(50, y, "not run", fontsize=FS_NOTE, color=MUTED, ha="center", va="center", style="italic")
         if 2 not in ran:
-            ftext(fig, left, H - 0.50, "effect logging not run", fontsize=FS_NOTE, color=MUTED, va="bottom")
-    ftext(fig, first + (WIDTH - right - first) / 2, 0.04, "Detection on violation boards (%), with 95% Wilson "
-          "intervals", fontsize=FS_TICK, color=INK2, ha="center", va="bottom")
-    ftext(fig, n_right, H - 0.36, "boards", fontsize=FS_NOTE, color=INK2, ha="right", va="bottom")
+            ftext(fig, left + width / 2, H - 0.50, "effect logging not run", fontsize=FS_NOTE, color=MUTED,
+                  ha="center", va="bottom")
+    ftext(fig, mid, 0.04, "Detection on violation boards (%), with 95% Wilson intervals", fontsize=FS_TICK,
+          color=INK2, ha="center", va="bottom")
+    n_of = {inv: str(max(len(cell(inv, arms, v)) for arms, *_ in treat for v, _ in conds)) for inv in invs}
+    column(fig, boards_c, lambda inv: at(ys[invs.index(inv)]), n_of, "boards", H - 0.36)
     for inv, y in zip(invs, ys):
         ftext(fig, name_right, at(y), W.DISPLAY[inv], ha="right", va="center")
-        n = max(len(cell(inv, arms, v)) for arms, *_ in treat for v, _ in conds)
-        ftext(fig, n_right, at(y), str(n), fontsize=FS_NOTE, color=INK2, ha="right", va="center")
-    x = legend_row(fig, 0.05, H - 0.09, [(c, lab, m, True) for _, c, m, lab in treat])
-    legend_row(fig, x + 0.05, H - 0.09, [(MUTED, "neutral-post level, standard setup", "|", True)])
+    legend_center(fig, mid, H - 0.09, [(c, lab, m, True) for _, c, m, lab in treat]
+                  + [(MUTED, "neutral post, standard setup", "|", True)])
     save(fig, "fig3_alibi")
 
 
