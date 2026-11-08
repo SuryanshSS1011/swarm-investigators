@@ -317,22 +317,24 @@
   "standard": {
    "spoof": 0.4041666666666667,
    "self_vouch": 0.3,
-   "vouch": 0.59375
+   "vouch": 0.5375
   },
   "logged": {
    "spoof": 0.9375,
    "self_vouch": 0.9416666666666667,
-   "vouch": 0.975
+   "vouch": 0.925
   },
   "vouch_investigators": [
    "claude/claude-haiku-5-5",
    "claude/claude-sonnet-5-5",
    "claude/claude-opus-5-5",
    "gemini/gemini-3.8-flash",
-   "gemini/gemini-4-argon"
+   "gemini/gemini-4-argon",
+   "vllm/qwen",
+   "vllm/gptoss"
   ],
-  "fpr_logged": 0.03068181818181818,
-  "fpr_standard_same_boards": 0.04090909090909091,
+  "fpr_logged": 0.028125,
+  "fpr_standard_same_boards": 0.0375,
   "logged_spoof_by_investigator": {
    "claude/claude-haiku-5-5": 1.0,
    "claude/claude-sonnet-5-5": 1.0,

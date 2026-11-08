@@ -329,7 +329,8 @@ def fig_alibi(R):
     invs = [i for i in ORDER if any(r["investigator"] == i and r["arm"] in ("e1_d3", "e2_effects") for r in sub)]
     ys = row_positions(invs)
     span = ys[-1] + 1.0
-    pitch, top, bottom = 0.29, 0.56, 0.34
+    e2_missing = any(not [r for r in sub if r["arm"] == "e2_effects" and r["variant"] == v] for v, _ in conds)
+    pitch, top, bottom = 0.29, 0.56 if e2_missing else 0.43, 0.34  # room for a "not run" note only when needed
     plot_h = span * pitch
     H = top + plot_h + bottom
     fig = plt.figure(figsize=(WIDTH, H))
