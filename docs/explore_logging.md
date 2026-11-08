@@ -30,3 +30,11 @@ with paired differences and exact McNemar tests and no multiplicity correction.
 ## Extension (November 7, about 09:50 ET)
 
 After the first results, the Anthropic budget turned out to be $100 rather than $40, so Opus was extended to every variant on Haiku's boards and Sonnet to Gemini's boards as well. The open-weight investigators were added in the same Modal session as the main study. Nothing else changed.
+
+## Amendment (November 8, about 00:55 ET, before any of these calls)
+
+E2 left out the peer alibi on its own and ran only the retraction and the combined retraction and alibi, on the
+reasoning that a log that defeats the combination should defeat the alibi alone. That is an inference, and Gemini 3.8
+Flash fell for the alibi more than for the retraction in E1, so the vouch variant now runs in the effects view for
+every investigator on the same boards as before. Gemini 4 Argon also runs the neutral variant, which it had skipped
+for budget. Nothing else changes, and the results stay exploratory.

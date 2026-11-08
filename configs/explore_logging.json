@@ -13,6 +13,7 @@
       "variants": [
         "neutral",
         "spoof",
+        "vouch",
         "self_vouch"
       ],
       "headers": [
@@ -57,10 +58,6 @@
     "gemini/gemini-4-argon": {
       "e2_effects": [
         "gemini/gemini-3.8-flash"
-      ],
-      "e2_effects_variants": [
-        "spoof",
-        "self_vouch"
       ]
     },
     "vllm/qwen": {

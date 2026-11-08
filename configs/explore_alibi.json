@@ -105,12 +105,6 @@
       ],
       "e1_d3": [
         "gemini/gemini-3.8-flash"
-      ],
-      "e1_main_variants": [
-        "self_vouch"
-      ],
-      "e1_d3_variants": [
-        "self_vouch"
       ]
     },
     "vllm/qwen": {

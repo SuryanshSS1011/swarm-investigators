@@ -43,3 +43,10 @@ tool records are the same on violation and clean boards, so only the agents' pos
 ## Extension (November 7, about 09:50 ET)
 
 After the first results, the Anthropic budget turned out to be $100 rather than $40, so Opus was extended to every variant on Haiku's boards and Sonnet to Gemini's boards as well. The open-weight investigators were added in the same Modal session as the main study. Nothing else changed.
+
+## Amendment (November 8, about 00:55 ET, before any of these calls)
+
+Gemini 4 Argon ran only the combined retraction-and-alibi variant, because its share was sized to the budget left at
+the time. With budget to spare, Argon now runs the remaining cells on Gemini 3.8 Flash's boards: vouch with the
+main-study prompt, and neutral, spoof and vouch with D3. The design, boards and comparisons are otherwise unchanged,
+and the results stay exploratory.
