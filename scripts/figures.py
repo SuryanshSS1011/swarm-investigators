@@ -104,7 +104,7 @@ def axes_at(fig, left, bottom, width, height):
 def save(fig, name):
     OUT.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT / f"{name}.png", dpi=300)
-    fig.savefig(OUT / f"{name}.pdf")
+    fig.savefig(OUT / f"{name}.pdf", metadata={"CreationDate": None})  # no date, so unchanged figures stay unchanged
     plt.close(fig)
 
 

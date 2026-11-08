@@ -1,7 +1,7 @@
 {
  "audits": {
   "preregistered_arms": 22880,
-  "e1_arms": 2720
+  "e1_arms": 2880
  },
  "investigators": [
   "claude/claude-haiku-5-5",
@@ -172,14 +172,15 @@
    "claude/claude-sonnet-5-5",
    "claude/claude-opus-5-5",
    "gemini/gemini-3.8-flash",
+   "gemini/gemini-4-argon",
    "vllm/qwen",
    "vllm/gptoss"
   ],
   "standard": {
-   "neutral": 0.7772727272727272,
-   "spoof": 0.38181818181818183,
-   "vouch": 0.55,
-   "self_vouch": 0.2818181818181818
+   "neutral": 0.7958333333333333,
+   "spoof": 0.4041666666666667,
+   "vouch": 0.5375,
+   "self_vouch": 0.3
   },
   "standard_all_investigators": {
    "self_vouch": 0.3,
@@ -254,13 +255,13 @@
     "standard": {
      "neutral": 1.0,
      "spoof": 0.65,
-     "vouch": NaN,
+     "vouch": 0.4,
      "self_vouch": 0.5
     },
     "d3": {
-     "neutral": NaN,
-     "spoof": NaN,
-     "vouch": NaN,
+     "neutral": 1.0,
+     "spoof": 1.0,
+     "vouch": 1.0,
      "self_vouch": 1.0
     },
     "n_d3_self_vouch": 20
@@ -315,14 +316,23 @@
   ],
   "standard": {
    "spoof": 0.4041666666666667,
-   "self_vouch": 0.3
+   "self_vouch": 0.3,
+   "vouch": 0.59375
   },
   "logged": {
    "spoof": 0.9375,
-   "self_vouch": 0.9416666666666667
+   "self_vouch": 0.9416666666666667,
+   "vouch": 0.975
   },
-  "fpr_logged": 0.03142857142857143,
-  "fpr_standard_same_boards": 0.03571428571428571,
+  "vouch_investigators": [
+   "claude/claude-haiku-5-5",
+   "claude/claude-sonnet-5-5",
+   "claude/claude-opus-5-5",
+   "gemini/gemini-3.8-flash",
+   "gemini/gemini-4-argon"
+  ],
+  "fpr_logged": 0.03068181818181818,
+  "fpr_standard_same_boards": 0.04090909090909091,
   "logged_spoof_by_investigator": {
    "claude/claude-haiku-5-5": 1.0,
    "claude/claude-sonnet-5-5": 1.0,
