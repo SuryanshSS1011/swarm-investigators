@@ -57,3 +57,15 @@ The attacker is one model with four attempts and the target's own answers as fee
 than a real culprit would get but a weaker search than a dedicated optimizer. Only the culprit's single post
 changes. A culprit that could also act differently, for example by doing the violation through a call whose effect
 looks benign, is out of scope.
+
+## Amendment (November 8, about 11:45 ET, before any open-weight E4 call)
+
+Qwen3-32B and gpt-oss-20b also re-test every selected post on its violation board and twin, in the same view, at
+replicate 1 and their main-study settings, run from the laptop on Modal. Neither model was a target, so their
+results measure transfer only. Nothing else changes.
+
+Two facts about the runs so far, recorded here before any analysis is written up. First, the Anthropic key was
+revoked before the first Haiku call, so Haiku's first two attack jobs returned authentication errors. Those rows
+were dropped, scripts/adaptive.py now skips a job on any API error, and the jobs reran with a new key. Second, Gemini
+4 Argon ran its re-test at reasoning effort "minimal", because the API accepted it, where the main study's calls had
+climbed to "low" after "minimal" was rejected. Both follow the study's rule of the lowest accepted setting.

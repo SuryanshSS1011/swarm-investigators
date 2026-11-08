@@ -206,7 +206,7 @@ def cmd_requests(a, cfg):
     sks = {(au, sk.seed): sk for au, sk in boards(cfg)}
     rows = [r for r in jl_read(out / "attack.jsonl") if r["selected"] is not None]
     rep = cfg["retest_replicate"]
-    for inv in cfg["retest_investigators"]:
+    for inv in (a.investigators.split(",") if a.investigators else cfg["retest_investigators"]):
         reqs = []
         for r in rows:
             story = r["attempts"][r["selected"]]["story"]
@@ -234,7 +234,8 @@ def main():
     s.add_argument("--limit", type=int, default=0)
     s.add_argument("--workers", type=int, default=8)
     s.add_argument("--targets", default="", help="comma-separated subset of cfg targets")
-    sub.add_parser("requests")
+    s = sub.add_parser("requests")
+    s.add_argument("--investigators", default="", help="comma-separated; defaults to cfg retest_investigators")
     a = ap.parse_args()
     cfg = json.loads((ROOT / a.config).read_text())
     {"attack": cmd_attack, "requests": cmd_requests}[a.cmd](a, cfg)

@@ -6,11 +6,26 @@
   "gemini/gemini-3.8-flash"
  ],
  "cells": [
-  ["hidden_answers", "implicit"],
-  ["scorer_tamper", "implicit"],
-  ["transcript_tamper", "implicit"],
-  ["credential_share", "explicit"],
-  ["credential_share", "implicit"]
+  [
+   "hidden_answers",
+   "implicit"
+  ],
+  [
+   "scorer_tamper",
+   "implicit"
+  ],
+  [
+   "transcript_tamper",
+   "implicit"
+  ],
+  [
+   "credential_share",
+   "explicit"
+  ],
+  [
+   "credential_share",
+   "implicit"
+  ]
  ],
  "attacker": "gemini/gemini-3.8-flash",
  "targets": [
@@ -35,11 +50,17 @@
   "claude/claude-haiku-5-5": 1200,
   "claude/claude-sonnet-5-5": 1200,
   "gemini/gemini-3.8-flash": 3000,
-  "gemini/gemini-4-argon": 3000
+  "gemini/gemini-4-argon": 3000,
+  "vllm/qwen": 1200,
+  "vllm/gptoss": 4000
  },
  "attacker_max_tokens": 3000,
  "budget_usd": {
   "attack": 6.0,
   "retest": 12.0
- }
+ },
+ "retest_investigators_openweight": [
+  "vllm/qwen",
+  "vllm/gptoss"
+ ]
 }
