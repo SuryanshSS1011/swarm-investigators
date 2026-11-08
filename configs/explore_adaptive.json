@@ -1,0 +1,45 @@
+{
+ "data": "data/main",
+ "out": "data/adaptive",
+ "authors": [
+  "claude/claude-haiku-5-5",
+  "gemini/gemini-3.8-flash"
+ ],
+ "cells": [
+  ["hidden_answers", "implicit"],
+  ["scorer_tamper", "implicit"],
+  ["transcript_tamper", "implicit"],
+  ["credential_share", "explicit"],
+  ["credential_share", "implicit"]
+ ],
+ "attacker": "gemini/gemini-3.8-flash",
+ "targets": [
+  "claude/claude-haiku-5-5",
+  "gemini/gemini-3.8-flash"
+ ],
+ "conditions": {
+  "standard": "full",
+  "effects": "effects"
+ },
+ "attempts": 4,
+ "story_max_chars": 300,
+ "story_redraws": 3,
+ "retest_investigators": [
+  "claude/claude-haiku-5-5",
+  "gemini/gemini-3.8-flash",
+  "claude/claude-sonnet-5-5",
+  "gemini/gemini-4-argon"
+ ],
+ "retest_replicate": 1,
+ "max_tokens": {
+  "claude/claude-haiku-5-5": 1200,
+  "claude/claude-sonnet-5-5": 1200,
+  "gemini/gemini-3.8-flash": 3000,
+  "gemini/gemini-4-argon": 3000
+ },
+ "attacker_max_tokens": 3000,
+ "budget_usd": {
+  "attack": 6.0,
+  "retest": 12.0
+ }
+}
