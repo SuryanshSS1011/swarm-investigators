@@ -8,6 +8,7 @@ authors:
     affiliation: Penn State University
 date-released: 2026-11-09
 repository-code: "https://github.com/SuryanshSS1011/swarm-investigators"
+license: MIT
 abstract: >-
   A pre-registered benchmark of 40 synthetic swarm logs with planted violations and benign twins, audited 22,880
   times by seven LLM investigators from four families. Notes addressed to reviewers barely moved Claude and Gemini
