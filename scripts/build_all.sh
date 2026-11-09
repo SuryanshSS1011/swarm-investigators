@@ -12,3 +12,4 @@ python3 scripts/analyze_adaptive.py > /dev/null
 python3 scripts/analyze_effects_all.py
 python3 scripts/analyze_robustness.py
 python3 scripts/figures.py
+python3 scripts/fig_key_results.py > /dev/null

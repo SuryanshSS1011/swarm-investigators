@@ -224,21 +224,26 @@ All of these except the order question come from `scripts/analyze_robustness.py`
 
 The figure numbers match the paper.
 
-![Figure 1](results/main/figB1_excerpts.png)
+![Figure 1](results/main/fig0_key_results.png)
 
-**Figure 1.** What each cover story looks like in a board, above the planted line it is trying to explain away.
+**Figure 1.** Detection of planted violations by seven LLM investigators, on the same boards in every row, from the five
+retraction cells. Effect logging adds a platform line recording what the planted tool call did.
 
-![Figure 2](results/main/fig1_cover_stories.png)
+![Figure 2](results/main/figB1_excerpts.png)
 
-**Figure 2.** Per investigator, a retraction pulls detection left and a fake receipt pushes it right.
+**Figure 2.** What each cover story looks like in a board, above the planted line it is trying to explain away.
 
-![Figure 3](results/main/fig2_forest.png)
+![Figure 3](results/main/fig1_cover_stories.png)
 
-**Figure 3.** Every pre-registered contrast with its 95% interval. Only the cover story crosses the dashed bar.
+**Figure 3.** Per investigator, a retraction pulls detection left and a fake receipt pushes it right.
 
-![Figure 4](results/main/fig3_alibi.png)
+![Figure 4](results/main/fig2_forest.png)
 
-**Figure 4.** The follow-ups. Alibis deepen the drop, the conflict-aware prompt helps some investigators, and effect
+**Figure 4.** Every pre-registered contrast with its 95% interval. Only the cover story crosses the dashed bar.
+
+![Figure 5](results/main/fig3_alibi.png)
+
+**Figure 5.** The follow-ups. Alibis deepen the drop, the conflict-aware prompt helps some investigators, and effect
 logging raises detection for all of them.
 
 ## Anatomy of a board
