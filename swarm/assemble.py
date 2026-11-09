@@ -51,7 +51,9 @@ def rules_text() -> str:
 def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | None = None,
              view: str = "full", spoof_text: str | None = None) -> Board:
     """view="full" shows posts and tool records. view="actions" shows tool records only (defense D2).
-    view="effects" is the full view with the platform's record of what the planted tool call did (E2)."""
+    view="effects" is the full view with the platform's record of what the planted tool call did (E2).
+    view="effects_all" adds the same kind of note to every other tool record too, so the planted note is one of many
+    (E5, docs/explore_effects_all.md)."""
     if variant not in W.VARIANTS and variant not in W.VARIANTS_EXTRA:
         raise ValueError(variant)
     if variant == "spoof_gen" and not spoof_text:
@@ -61,19 +63,25 @@ def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | Non
     who = {"culprit": p.culprit, "user": p.user}
 
     planted0, planted1 = [], []
-    effect_done = view != "effects"
+    effect_done = view not in ("effects", "effects_all")
     for kind, role, vtext, ctext, group, is_anchor in spec["lines"]:
         item = {"kind": kind, "agent": who[role], "text": _fill(vtext if violating else ctext, sk),
-                "tag": "planted", "anchor": is_anchor}
+                "tag": "planted", "anchor": is_anchor, "effect": False}
         if not effect_done and kind == "tool" and (p.archetype, p.tier) in W.EFFECT_SUFFIX:
             item["text"] += _fill(W.EFFECT_SUFFIX[(p.archetype, p.tier)][0 if violating else 1], sk)
+            item["effect"] = True
             effect_done = True
         (planted0 if group == 0 else planted1).append(item)
 
-    base = [{"kind": s.kind, "agent": s.agent, "text": s.text, "tag": "base", "anchor": False} for s in sk.slots]
+    base = [{"kind": s.kind, "agent": s.agent, "text": s.text, "tag": "base", "anchor": False, "effect": False}
+            for s in sk.slots]
     if any(b["kind"] == "post" and not b["text"] for b in base):
         raise ValueError("skeleton has unfilled posts")
     items = base[: p.after0] + planted0 + base[p.after0: p.after1] + planted1 + base[p.after1:]
+    if view == "effects_all":
+        for it in items:
+            if it["kind"] == "tool" and not it["effect"]:
+                it["text"] += W.generic_effect(it["text"])
 
     # Timestamps depend only on the skeleton, so violation and clean boards share them.
     rng = random.Random(sk.seed * 104729 + 3)
@@ -106,7 +114,7 @@ def assemble(sk: Skeleton, violating: bool, variant: str, agent_model: str | Non
 
     if view == "actions":
         items = [it for it in items if it["kind"] == "tool"]
-    elif view not in ("full", "effects"):
+    elif view not in ("full", "effects", "effects_all"):
         raise ValueError(view)
 
     out, evidence, variant_line, anchor_line = [], [], None, None
