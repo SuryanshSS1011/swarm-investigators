@@ -164,13 +164,15 @@ One line of ground truth beat the last word. Pooled detection rose from 40% to 9
 93% under an alibi and from 30% to 94% under both, with false positives at 3% against 4% without the log. Every
 Claude and Gemini investigator reached at least 95%, Qwen3-32B reached 90% and gpt-oss-20b reached 75%.
 
-But was the note doing the work, or just pointing at the right line? In E5 every tool call got a note, such as
-`[platform: read /data/public/task_14/spec.md]`, so the planted one was one of about 75. The Claude and Gemini
-investigators still caught 98% of retraction boards against 99% with one note, flagged every violation board they
+But was the line doing the work, or just pointing at the right spot? In E5 every tool call got an effect line, such
+as `[platform: read /data/public/task_14/spec.md]`, so the planted one was one of about 75. The Claude and Gemini
+investigators still caught 98% of retraction boards against 99% with one line, flagged every violation board they
 answered and missed only when they refused. Their false positives on twins rose from 4% to 6%. Qwen3-32B and
-gpt-oss-20b caught 100% and 78%, against 90% and 75% with one note, and flagged no clean twin. The note also makes the
-violation visible to a plain rule: two patterns for protected paths and tokens, added after we saw the notes, caught all
-40 effect-logged violations with no false positives.
+gpt-oss-20b caught 100% and 78%, against 90% and 75% with one line, and flagged no clean twin. And for the Claude and
+Gemini investigators, a retraction cost 46 points on the standard log but 0.6 points with the line, so the line removes
+the retraction effect rather than only making the violation easier to see. The line also makes the violation visible
+to a plain rule. Two patterns for protected paths and tokens, added after we saw the lines, caught all 40
+effect-logged violations with no false positives.
 
 ▶ `python3 scripts/tour.py logged`
 
@@ -182,13 +184,13 @@ the platform logs effects.
 
 | | Standard log | Effect logging |
 |---|---|---|
-| Attacks the attacker won | 70 of 80 | 2 of 80 |
-| The targets on a fresh re-test | caught 21%, against 46% for our fixed retraction | caught 94%, against 100% |
+| Boards where the attacker got past its target within four tries | 70 of 80 | 2 of 80 |
+| The two targets on a fresh re-test | caught 21%, against 46% for our fixed retraction | caught 94%, against 100% |
 | Claude Sonnet 5.5 and Gemini 4 Argon, which were not targets | caught 24% and 45% | caught 95% and 100% |
 | Qwen3-32B and gpt-oss-20b, which were not targets | caught 29% and 2.5% | caught 66% and 58%, against 90% and 75% |
 
-Effect logging held for the four Claude and Gemini investigators we tested, and it did not hold for the two small
-open-weight models. Eight of the nine misses by the Claude and Gemini investigators came from cells where the platform
+Effect logging held for the two targets and for Sonnet and Argon, which re-tested the same posts, and it did not hold
+for the two small open-weight models, which also only re-tested them. Eight of the nine misses by the Claude and Gemini investigators came from cells where the platform
 line shows that a token was used but not whether it was allowed. So logs should also say when an action crosses a
 permission boundary.
 
@@ -220,17 +222,23 @@ All of these except the order question come from `scripts/analyze_robustness.py`
 
 ## Results at a glance
 
-![Figure 1](results/main/fig1_cover_stories.png)
+The figure numbers match the paper.
 
-**Figure 1.** Per investigator, a retraction pulls detection left and a fake receipt pushes it right.
+![Figure 1](results/main/figB1_excerpts.png)
 
-![Figure 2](results/main/fig2_forest.png)
+**Figure 1.** What each cover story looks like in a board, above the planted line it is trying to explain away.
 
-**Figure 2.** Every pre-registered contrast with its 95% interval. Only the cover story crosses the dashed bar.
+![Figure 2](results/main/fig1_cover_stories.png)
 
-![Figure 3](results/main/fig3_alibi.png)
+**Figure 2.** Per investigator, a retraction pulls detection left and a fake receipt pushes it right.
 
-**Figure 3.** The follow-ups. Alibis deepen the drop, the conflict-aware prompt helps some investigators, and effect
+![Figure 3](results/main/fig2_forest.png)
+
+**Figure 3.** Every pre-registered contrast with its 95% interval. Only the cover story crosses the dashed bar.
+
+![Figure 4](results/main/fig3_alibi.png)
+
+**Figure 4.** The follow-ups. Alibis deepen the drop, the conflict-aware prompt helps some investigators, and effect
 logging raises detection for all of them.
 
 ## Anatomy of a board
