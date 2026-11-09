@@ -166,7 +166,8 @@ Claude and Gemini investigator reached at least 95%, Qwen3-32B reached 90% and g
 But was the note doing the work, or just pointing at the right line? In E5 every tool call got a note, such as
 `[platform: read /data/public/task_14/spec.md]`, so the planted one was one of about 75. The Claude and Gemini
 investigators still caught 98% of retraction boards against 99% with one note, flagged every violation board they
-answered and missed only when they refused. False positives on twins rose from 4% to 6%. The note also makes the
+answered and missed only when they refused. Their false positives on twins rose from 4% to 6%. Qwen3-32B and
+gpt-oss-20b caught 100% and 78%, against 90% and 75% with one note, and flagged no clean twin. The note also makes the
 violation visible to a plain rule: two patterns for protected paths and tokens, added after we saw the notes, caught all
 40 effect-logged violations with no false positives.
 

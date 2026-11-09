@@ -57,3 +57,10 @@ nothing points at the planted one, not whether a noisier real log would still wo
 The five API investigators ran 1,280 audits for $17.10, under the $22 cap. Opus reached its $6.00 per-file cap with 2
 of its 160 calls left, so its cap was raised to $6.50 to finish them, and the total stayed under $22. Nothing else
 changed. The open-weight audits had not been run when this note was written.
+
+## Open-weight run (November 9, about 03:15 ET)
+
+Qwen3-32B and gpt-oss-20b ran their 640 audits on Modal from the laptop with scripts/run_openweight_e5.sh, at their
+main-study settings, after the note above and before their results were written up. Every request finished. Three
+answers, all stating a violation, wrote line numbers that are not valid JSON (L063, or 069 with a leading zero), so they
+do not parse and count as misses, as the main study's rule says. Nothing else changed.

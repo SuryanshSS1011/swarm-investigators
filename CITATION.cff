@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this benchmark or its results, please cite it as below."
+title: "The Last Word Wins: Retractions and Peer Alibis in Swarm Logs Mislead LLM Incident Investigators"
+type: software
+authors:
+  - family-names: Sijwali
+    given-names: Suryansh Singh
+    affiliation: Penn State University
+date-released: 2026-11-09
+repository-code: "https://github.com/SuryanshSS1011/swarm-investigators"
+abstract: >-
+  A pre-registered benchmark of 40 synthetic swarm logs with planted violations and benign twins, audited 22,880
+  times by seven LLM investigators from four families. Notes addressed to reviewers barely moved Claude and Gemini
+  investigators, but an agent's retraction of its own admission cut pooled detection from 78% to 42%. Logging what
+  each tool call did restored detection, including when every call carried a note and against an adaptive attacker.
+  Entry in Apart Research's Swarm Alignment Hackathon, Track 4.
+keywords:
+  - AI safety
+  - multi-agent systems
+  - LLM oversight
+  - incident investigation
+  - AI control
+  - benchmark
