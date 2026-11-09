@@ -51,3 +51,9 @@ The generic notes restate what each record already shows, and a real platform wo
 appear in the call, such as files a script read. Only the planted note carries information beyond its record, so a
 careful investigator can still find it by reading every note. E5 asks whether investigators read the notes when
 nothing points at the planted one, not whether a noisier real log would still work.
+
+## Run notes (November 9, about 02:25 ET, written after the API runs and before the report text)
+
+The five API investigators ran 1,280 audits for $17.10, under the $22 cap. Opus reached its $6.00 per-file cap with 2
+of its 160 calls left, so its cap was raised to $6.50 to finish them, and the total stayed under $22. Nothing else
+changed. The open-weight audits had not been run when this note was written.
