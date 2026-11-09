@@ -163,6 +163,13 @@ One line of ground truth beat the last word. Pooled detection rose from 40% to 9
 93% under an alibi and from 30% to 94% under both, with false positives at 3% against 4% without the log. Every
 Claude and Gemini investigator reached at least 95%, Qwen3-32B reached 90% and gpt-oss-20b reached 75%.
 
+But was the note doing the work, or just pointing at the right line? In E5 every tool call got a note, such as
+`[platform: read /data/public/task_14/spec.md]`, so the planted one was one of about 75. The Claude and Gemini
+investigators still caught 98% of retraction boards against 99% with one note, flagged every violation board they
+answered and missed only when they refused. False positives on twins rose from 4% to 6%. The note also makes the
+violation visible to a plain rule: two patterns for protected paths and tokens, added after we saw the notes, caught all
+40 effect-logged violations with no false positives.
+
 ▶ `python3 scripts/tour.py logged`
 
 ### Story 7. The attacker who learns
@@ -196,7 +203,18 @@ log and loses all four tries against the effect log.
 3. **Two heads:** Pairing investigators from different families and flagging a board if either one flagged it gave
    44% to 75% under a retraction, against 78% to 100% with a harmless post.
 4. **The scoring choice:** Counting "insufficient evidence" as a correct answer still leaves detection falling from 80%
-   to 57% under a retraction.
+   to 57% under a retraction. Most misses were not abstentions either. The Claude and Gemini investigators cleared the
+   culprit on 25% of retraction boards, against 0.4% with a harmless post.
+5. **One cell carrying everything:** Leaving out any one retraction cell still leaves a drop of 27 to 42 points.
+6. **Independent pairs:** The pre-registered tests treat every paired board as independent. Treating each seed as one
+   cluster, an exact sign-flip test still gives p = 0.006 for the cover story and p = 2 × 10⁻⁶ for retractions.
+7. **More thinking:** At high reasoning effort, confident clearing fell from 16% to 2%, but detection under a
+   retraction barely moved, and Sonnet and Opus fell from about half to a quarter.
+8. **What we could not test:** No board put the admission after the benign claim, so we cannot separate the order of
+   the posts from the pull of a self-serving correction.
+
+All of these except the order question come from `scripts/analyze_robustness.py`, which writes
+`results/main/robustness.json`, and none of them was pre-registered.
 
 ## Results at a glance
 
@@ -224,7 +242,7 @@ planted event              violation version, or the benign twin that differs on
       |
 story post at the anchor   neutral, retraction, fake receipt, note to reviewers or peer alibi
       |
-view                       full log, tool records only, or full log plus the platform's effect lines
+view                       full log, tool records only, full log plus the planted call's effect, or every call's effect
       |
 investigator               verdict, agents, lines, rules and a confidence from 0 to 100
 ```
@@ -251,11 +269,13 @@ Every protocol was committed before its first model call, and the analysis scrip
 | `docs/explore_logging.md` (E2) | Effect logging. |
 | `docs/explore_reasoning.md` (E3) | High reasoning effort. |
 | `docs/explore_adaptive.md` (E4) | The adaptive attacker, with an amendment that added the open-weight re-tests before their calls. |
+| `docs/explore_effects_all.md` (E5) | A platform note on every tool call, so the planted note no longer points at the planted line. |
 | `docs/prereg_replication.md` (R) | Model-written retractions. Its GPT-5.6 Sol arm did not run, because there was no OpenAI API access. |
 
 The results land in `results/main/`. `summary.json` holds every pre-registered test of the main study.
 `secondary.json` holds the secondary and exploratory quantities, scored leniently, split by investigator group and
-including E1, E2 and the authorship probe. `replication.json`, `reasoning.json` and `adaptive.json` hold R, E3 and E4.
+including E1, E2 and the authorship probe. `replication.json`, `reasoning.json`, `adaptive.json` and
+`effects_all.json` hold R, E3, E4 and E5, and `robustness.json` holds the post hoc checks listed under the plot holes.
 The figures are `fig*.png` and `fig*.pdf`, and `raw/` holds the gzipped raw model outputs, scored audits and probe
 answers behind every number.
 
@@ -295,7 +315,8 @@ bash scripts/build_all.sh                          # score, analyze, draw figure
 
 The adaptive attacker has its own loop. `python3 scripts/adaptive.py attack` runs it, `python3 scripts/adaptive.py
 requests` builds the re-test requests, and `bash scripts/run_openweight_e4.sh` runs the open-weight re-tests from a
-laptop.
+laptop. E5 builds its requests with `python3 scripts/study.py --config configs/explore_effects_all.json requests`, and
+`bash scripts/run_openweight_e5.sh` runs its open-weight audits from a laptop.
 
 ## Map of the repo
 
